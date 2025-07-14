@@ -1,0 +1,21 @@
+﻿@page "/orders"
+@using Microsoft.AspNetCore.Authorization
+
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+
+<h3>Orders</h3>
+
+<OrderSummary
+    Title="Order Summary"
+    IsSelectable="true"/>
+<button class="btn btn-primary" @onclick="DashboardNav">Dashboard</button>
+@code {
+    private void DashboardNav()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
+}

@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Barham_C971.Pages.MainPage"
+             xmlns:controls="clr-namespace:Barham_C971.Controls"
+             xmlns:local="clr-namespace:Barham_C971.DataClasses"
+             x:Name="TermPage">
+
+    <!--Main Layout-->
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto" Style="{StaticResource MainLayout}">
+
+        <!--Static Header-->
+        <Grid Grid.Row="0">
+
+            <!--Logo-->
+            <Image Source="{AppThemeBinding Light='wgulogo.png', Dark='wgulogodark.png'}"
+                   HeightRequest="50"
+                   VerticalOptions="Start"
+                   HorizontalOptions="Start"
+                   x:Name="Logo"
+                   Margin="10"/>
+        </Grid>
+        
+        <!--Tabs and term name entry-->
+        <VerticalStackLayout Grid.Row="1">
+            
+        <!--CollectionView to display term tabs dynamically-->
+            <CollectionView ItemsSource="{Binding Terms}"
+                            SelectedItem="{Binding SelectedTerm, Mode=TwoWay}"
+                            ItemsLayout="HorizontalList"
+                            x:Name="TermsCollectionView"
+                            Grid.Row="1">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:Term">
+                        <controls:TermTab 
+                            TabText="{Binding TermName}"
+                            BoundTerm="{Binding}"
+                            IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                            TermTabTapped="OnTermTabTapped"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!--Entry for term name while editing-->
+            <StackLayout Orientation="Horizontal" Padding="10" IsVisible="{Binding IsEditingTerm}"
+                         HorizontalOptions="Center">
+                <Label Text="Term Title:" VerticalOptions="Center"/>
+                <Entry Text="{Binding SelectedTerm.TermName, Mode=TwoWay}"/>
+            </StackLayout>
+        </VerticalStackLayout>
+        
+        <!--Term Dates-->
+        <Border Grid.Row="2" Style="{StaticResource TermDateContainer}"  Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!--Start Date-->
+                <DatePicker Date="{Binding SelectedTerm.TermStartDate}"
+                        HorizontalOptions="Start"
+                            Grid.Column="0">
+                    <DatePicker.Triggers>
+                        <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingTerm}" Value="False">
+                            <Setter Property="Style" Value="{StaticResource DateDisabled}"/>
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryText}}"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingTerm}" Value="True">
+                            <Setter Property="Style" Value="{StaticResource DateEnabled}"/>
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryText}}"/>
+                        </DataTrigger>
+                    </DatePicker.Triggers>
+                </DatePicker>
+                
+                <!--Term Status-->
+                <Label Text="{Binding SelectedTerm.TermStatus}" Grid.Column="1"
+                       Style="{StaticResource StatusLabel}"
+                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryText}}"/>
+
+                <!--End Date-->
+                <DatePicker Date="{Binding SelectedTerm.TermEndDate}"
+                            HorizontalOptions="End"
+                            Grid.Column="2"
+                            Style="{StaticResource DateDisabled}"
+                            TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryText}}"/>
+            </Grid>
+        </Border>
+
+        <!--Term Courses populated dynamically from "SelectedTerm"-->
+        <CollectionView ItemsSource="{Binding SelectedTerm.Courses}"
+                        ItemsLayout="VerticalList"
+                        Margin="0"
+                        Grid.Row="3">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <controls:CourseBlock CourseName="{Binding CourseName}"
+                                          CourseStatus="{Binding CourseStatus}"
+                                          CourseStartDate="{Binding CourseStartDate}"
+                                          CourseEndDate="{Binding CourseEndDate}"
+                                          DeleteCommand="{Binding Source={x:Reference TermPage}, Path=BindingContext.DeleteCourseCommand}"
+                                          EditCommand="{Binding Source={x:Reference TermPage}, Path=BindingContext.EditCourseCommand}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!--Course and Term edit buttons-->
+        <Grid RowDefinitions="*, *" Grid.Row="4">
+
+            <Button Text="Add Course" Style="{StaticResource BackButton}" 
+                    Grid.Row="0" 
+                    HorizontalOptions="Fill"
+                    Command="{Binding AddCourseCommand}"/>
+            
+            <StackLayout Orientation="Horizontal" Grid.Row="1" 
+                         IsVisible="{Binding IsEditingTerm}"  
+                         HorizontalOptions="Center"
+                         Spacing="5">
+                <Button Text="Save Term" Command="{Binding SaveTermCommand}"
+                        Style="{StaticResource BackButton}"/>
+                <Button Text="Cancel" Command="{Binding CancelTermCommand}"
+                        Style="{StaticResource BackButton}"/>
+            </StackLayout>
+            
+            <HorizontalStackLayout
+                Spacing="10"
+                HorizontalOptions="Center"
+                Grid.Row="1">
+                <Button Text="Add Term" Style="{StaticResource BackButton}" 
+                        Command="{Binding AddTermCommand}"
+                        IsVisible="{Binding IsEditingTerm, Converter={StaticResource InverseBooleanConverter}}"/>
+                <Button Text="Edit Term" Style="{StaticResource BackButton}" 
+                        Command="{Binding EditTermCommand}"
+                        IsVisible="{Binding IsEditingTerm, Converter={StaticResource InverseBooleanConverter}}"/>
+                <Button Text="Delete Term" Style="{StaticResource BackButton}" 
+                        Command="{Binding DeleteTermCommand}"
+                        IsVisible="{Binding IsEditingTerm, Converter={StaticResource InverseBooleanConverter}}"/>
+            </HorizontalStackLayout>
+        </Grid>
+    </Grid>  
+</ContentPage>

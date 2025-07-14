@@ -1,0 +1,102 @@
+﻿@using System.Text
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext DbContext
+@inject ILogger<OrdersByUser> Logger
+@inject IJSRuntime JS
+
+@rendermode InteractiveServer
+
+<h3>Product Sales</h3> <!--Title-->
+<p class="text-muted">Generated on @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p> <!--DateTime stamp-->
+@if (ReportData == null) //Loading message
+{
+    <p><em>Loading...</em></p>
+}
+else if (!ReportData.Any()) //Null check
+{
+    <p>No products found.</p>
+}
+else //Export button and table
+{
+    <button class="btn btn-secondary mb-3" @onclick="ExportCsv">Download CSV</button>
+}
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Product</th>
+            <th>Description</th>
+            <th>Total Sold</th>
+            <th>Total Value</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var entry in ReportData)
+        {
+            <tr>
+                <td>@entry.Name</td>
+                <td>@entry.Description</td>
+                <td>@entry.TotalSold</td>
+                <td>@entry.TotalValue.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<ProductReport> ReportData { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ReportData = await DbContext.OrderItems
+        .GroupBy(oi => new
+        {
+            oi.ProductID,
+            oi.Product.Name,
+            oi.Product.Description
+        })
+        .Select(g => new ProductReport
+            {
+                ProductID = g.Key.ProductID,
+                Name = g.Key.Name,
+                Description = g.Key.Description,
+                TotalSold = g.Sum(oi => oi.Quantity),
+                TotalValue = g.Sum(oi => oi.Quantity * oi.PriceAtOrder)
+            })
+        .OrderByDescending(r => r.TotalValue)
+        .ToListAsync();
+
+        Logger.LogInformation($"Loaded {ReportData.Count} product summaries");
+    }
+
+    private async Task ExportCsv() //Includes title and date in the CSV file
+    {
+        var csv = new StringBuilder();
+        csv.AppendLine($"Product Sales Report, Generated on {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        csv.AppendLine();
+        csv.AppendLine("Product, Description, Total Sold, Total Value");
+        foreach (var row in ReportData)
+        {
+            csv.AppendLine($"\"{row.Name}\", \"{row.Description}\", {row.TotalSold}, {row.TotalValue}");
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+
+        var fileName = $"Report-{DateTime.Now:yyyyMMdd}.csv";
+
+        var fileContent = new MemoryStream(bytes);
+
+        using var streamRef = new DotNetStreamReference(stream: fileContent);
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+
+    private class ProductReport
+    {
+        public int ProductID { get; set; }
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public int TotalSold { get; set; }
+        public decimal TotalValue { get; set; }
+    }
+}

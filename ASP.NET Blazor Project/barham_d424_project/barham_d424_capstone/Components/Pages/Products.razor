@@ -1,0 +1,42 @@
+﻿@page "/products"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+
+@inject NavigationManager Navigation
+@inject AppDbContext DbContext
+@inject ILogger<Products> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+
+@rendermode InteractiveServer
+
+<!--Users cannot add or modify products-->
+@attribute [Authorize(Roles = "Production,Owner,Admin")] 
+
+<!--Component reused in order form, only allow edit on this page-->
+<ProductSummary
+    Products = "ProductsList"
+    Categories = "Categories"
+    AllowEdit = "true"/>
+
+<button class="btn btn-primary m-2" @onclick="BackToDash">Dashboard</button>
+
+@code{
+    public List<Product> ProductsList { get; set; } = new();
+    public List<ProductCategory> Categories { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductsList = await DbContext.Products.ToListAsync();
+        Categories = await DbContext.ProductCategories.ToListAsync();
+    }
+
+    private void BackToDash()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+
+}
+

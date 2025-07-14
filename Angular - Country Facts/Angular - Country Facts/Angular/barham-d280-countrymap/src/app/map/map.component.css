@@ -1,0 +1,12 @@
+svg {
+    fill: darkgreen;
+    stroke: black;
+    width: 100%;
+}
+#map-container {
+    background-color: darkblue;
+    width: 100%;
+}
+path:hover {
+    fill: darkred;
+}

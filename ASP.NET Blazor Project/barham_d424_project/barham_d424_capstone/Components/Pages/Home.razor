@@ -1,0 +1,26 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject NavigationManager Navigation
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Home</PageTitle>
+
+@code{
+    //Redirect to login for no auth token, to dashboard if logged in
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/dashboard", forceLoad: true);
+        }
+        else
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+}

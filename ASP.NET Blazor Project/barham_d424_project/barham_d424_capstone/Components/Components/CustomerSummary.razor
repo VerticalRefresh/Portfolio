@@ -1,0 +1,247 @@
+﻿<!--For Auth, Data and Models, and EF Core functionality-->
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using barham_d424_capstone.Data
+@using barham_d424_capstone.Models
+@using Microsoft.EntityFrameworkCore
+
+<!--Logging-->
+@inject ILogger<CustomerSummary> Logger  
+
+<!--DBContext for pulling information-->
+@inject AppDbContext DbContext
+
+<!--Auth state provider for UserID-->
+@inject AuthenticationStateProvider AuthStateProvider
+
+<!--Navigation-->
+@inject NavigationManager Navigation
+
+<!--Authorized only-->
+@attribute [Authorize]
+
+<!--Interactive-->
+@rendermode InteractiveServer
+
+<!--Search and filter-->
+<div class="mb-3 row">
+    <div class="col-md-6">
+        <label>Search by name</label>
+        <input type="text" class="form-control" placeholder="Search by name..." @bind="FilterName" @bind:event="oninput" />
+    </div>
+    <div class="col-md-6">
+        <label>Search by ID</label>
+        <input type="number" class="form-control" placeholder="Search by ID..." @bind="FilterID" @bind:event="oninput" />
+    </div>
+</div>
+
+<!--Filter by balance-->
+<div class="form-check mb-3">
+    <input type="checkbox" class="form-check-input" @bind="FilterBalance" />
+    <label class="form-check-label">Only show customers with balances</label>
+</div>
+
+<!--Loading message-->
+@if (Customers == null)
+{
+    <p><em>Loading customers...</em></p>
+}
+else if (!Customers.Any()) //Sanity check
+{
+    <p>No customers found.</p>
+}
+else
+{
+    <table class="table table-striped"><!--Table header-->
+
+        <thead class="table-dark">
+            <tr>
+                <th>Customer ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Shipping Address</th>
+                <th>Outstanding Balance</th>
+            </tr>
+        </thead>
+
+        <tbody>  <!--Customer rows, handles select customer callback-->
+            @foreach (var customer in filteredCustomers)
+            {
+                <tr class="@(SelectedCustomer == customer ? "table-primary" : "")"
+                    style="cursor:pointer"
+                    @onclick="@(() => SelectCustomer(customer))">
+                    <td>@customer.CustomerId</td>
+                    <td>@customer.Name</td>
+                    <td>@customer.Email</td>
+                    <td>@customer.Phone</td>
+                    <td>
+                        <div>@customer.Address.Address1</div>
+                        @if(!string.IsNullOrWhiteSpace(customer.Address.Address2))
+                        {
+                            <div>
+                                @customer.Address.Address2
+                            </div>
+                        }
+                        <div>@customer.Address.City, @customer.Address.StateCode @customer.Address.ZipCode</div>
+                    </td>
+                    <td>@(customerBalances.TryGetValue(customer.CustomerId, out var balance) ? balance.ToString("C") : "$0.00")</td>                
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    @if (CustomerToDelete != null) //Delete confirmation
+    {
+        <div class="alert alert-danger">
+            <p>Are you sure you want to delete customer @CustomerToDelete.Name?</p>
+            <button class="btn btn-danger" @onclick="() => DeleteCustomer()">Yes</button>
+            <button class="btn btn-secondary" @onclick="() => CustomerToDelete = null">No</button>
+        </div>
+    }
+
+    <NavLink class="btn btn-secondary" href="/customerform/0">New Customer</NavLink> <!--Navigates to new customer on any page, useful for Order form-->
+
+    @if (EditPage) //Only allow editing and deletion from customer management page
+    {
+        @if (SelectedCustomer != null)
+        {
+            <NavLink class="btn btn-secondary" href="@($"/customerform/{SelectedCustomer?.CustomerId ?? 0}")">Edit</NavLink>
+            <button class="btn btn-danger"
+            @onclick="() => ConfirmDelete(SelectedCustomer)">Delete</button>
+        }
+    }
+}
+
+@code {
+    //Customers
+    [Parameter] public List<Customer> Customers { get; set; } = new();
+
+    //Filtered
+    private List<Customer> filteredCustomers = new();
+
+    //Selected customer callback
+    [Parameter] public EventCallback<Customer> OnCustomerSelected { get; set; }
+
+    //Callback for deleted customer
+    [Parameter] public EventCallback<Customer> OnCustomerDeleted { get; set; }
+    private string filterName;
+    
+    //Filter parameters
+    public string FilterName { get => filterName; 
+        set
+        {
+            if (filterName != value)
+            {
+                filterName = value;
+                ApplyFilters();
+            }
+        }
+    }
+    private int filterId;
+    public int FilterID
+    {
+        get => filterId;
+        set
+        {
+            if (filterId != value)
+            {
+                filterId = value;
+                ApplyFilters();
+            }
+        }
+    }
+    private bool filterBalance;
+    public bool FilterBalance
+    {
+        get => filterBalance;
+        set
+        {
+            if (filterBalance != value)
+            {
+                filterBalance = value;
+                ApplyFilters();
+            }
+        }
+    }
+
+    //find customer balances
+    [Parameter] public Dictionary<int, decimal> customerBalances { get; set; } = new();
+
+    //Selected customer
+    public Customer? SelectedCustomer { get; set; }
+
+    //Customer to delete
+    private Customer? CustomerToDelete { get; set; }
+
+    //Customer edit UI logic
+    [Parameter] public bool EditPage { get; set; } = false;
+
+    //when parameters are set, load customers and balances
+    protected override void OnParametersSet()
+    {
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        filteredCustomers = Customers;
+        
+        //Filter customers based on search string
+        if (!string.IsNullOrWhiteSpace(FilterName))
+        {
+            filteredCustomers = filteredCustomers
+            .Where(c => c.Name.Contains(FilterName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        }
+
+        //Filter customers based on customer ID
+        if (FilterID > 0)
+        {
+            filteredCustomers = filteredCustomers
+            .Where(c => c.CustomerId == FilterID)
+            .ToList();
+        }
+
+        //Check boolean to filter customers with balances
+        if (FilterBalance)
+        {
+            filteredCustomers = filteredCustomers
+            .Where(c => customerBalances.ContainsKey(c.CustomerId) && customerBalances[c.CustomerId] > 0)
+            .ToList();
+        }
+    }
+
+    private void ConfirmDelete(Customer customer) //pops delete confirmation ui
+    {
+        Logger.LogInformation($"Confirm Delete Customer: {customer.CustomerId}");
+        CustomerToDelete = customer;
+    }
+
+    private async Task DeleteCustomer()  //Fulfills delete
+    {
+        if (CustomerToDelete != null)
+        {
+            await OnCustomerDeleted.InvokeAsync(CustomerToDelete);
+            CustomerToDelete = null;
+        }
+    }
+
+
+    private async Task SelectCustomer(Customer customer) //Handles select customer callback for order form and customer management/edit
+    {
+        Logger.LogInformation("Select Customer Called"); 
+        Logger.LogInformation($"Selected Customer: {customer.CustomerId}"); 
+        if (SelectedCustomer == customer)
+        {
+            SelectedCustomer = null;
+        }
+        else
+        {
+            SelectedCustomer = customer;
+        }
+        
+        StateHasChanged();
+        await OnCustomerSelected.InvokeAsync(SelectedCustomer);
+    }
+}

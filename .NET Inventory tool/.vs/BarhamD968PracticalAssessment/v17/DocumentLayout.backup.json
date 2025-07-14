@@ -1,0 +1,195 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barhamd968practicalassessment\\barhamd968practicalassessment\\productsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\productsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\barhamd968practicalassessment\\partsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\partsform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barhamd968practicalassessment\\barhamd968practicalassessment\\mainpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\mainpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barhamd968practicalassessment\\barhamd968practicalassessment\\classes\\inventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\classes\\inventory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barhamd968practicalassessment\\barhamd968practicalassessment\\classes\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\classes\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barhamd968practicalassessment\\barhamd968practicalassessment\\classes\\outsourced.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\classes\\outsourced.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barhamd968practicalassessment\\barhamd968practicalassessment\\classes\\inhouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\classes\\inhouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barhamd968practicalassessment\\barhamd968practicalassessment\\classes\\part.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76923D7D-D2BB-43A6-9F9B-CFEA1A5D1E9B}|BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment.csproj|solutionrelative:barhamd968practicalassessment\\classes\\part.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PartsForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\PartsForm.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\PartsForm.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Documents\\WGU\\Csharp\\BarhamFinalProject\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\PartsForm.cs [Design]",
+              "RelativeToolTip": "..\\..\\Documents\\WGU\\Csharp\\BarhamFinalProject\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\PartsForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-15T18:58:34.845Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ProductsForm.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\ProductsForm.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\ProductsForm.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\ProductsForm.cs",
+              "RelativeToolTip": "BarhamD968PracticalAssessment\\ProductsForm.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAALAAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-15T18:36:25.407Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Outsourced.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Outsourced.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\Classes\\Outsourced.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Outsourced.cs",
+              "RelativeToolTip": "BarhamD968PracticalAssessment\\Classes\\Outsourced.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-15T18:20:37.179Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Inhouse.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Inhouse.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\Classes\\Inhouse.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Inhouse.cs",
+              "RelativeToolTip": "BarhamD968PracticalAssessment\\Classes\\Inhouse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-15T18:20:31.06Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Part.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Part.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\Classes\\Part.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Part.cs",
+              "RelativeToolTip": "BarhamD968PracticalAssessment\\Classes\\Part.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T14:56:27.777Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Inventory.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Inventory.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\Classes\\Inventory.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Inventory.cs",
+              "RelativeToolTip": "BarhamD968PracticalAssessment\\Classes\\Inventory.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAE4AAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T14:56:15.488Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Product.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Product.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\Classes\\Product.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\Classes\\Product.cs",
+              "RelativeToolTip": "BarhamD968PracticalAssessment\\Classes\\Product.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T15:02:09.883Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "FloatingWindowState": {
+        "Id": "5cf425be-b382-4f53-b380-3941cdfc7a0a",
+        "Display": 1,
+        "X": -5,
+        "Y": 0,
+        "Width": 1450,
+        "Height": 1680,
+        "WindowState": 0
+      },
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "FloatingWindowState": {
+        "Id": "f86ab1db-274b-47a1-ad49-4fb2cb9ff94e",
+        "Display": 0,
+        "X": 808,
+        "Y": 335,
+        "Width": 1169,
+        "Height": 1247,
+        "WindowState": 0
+      },
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MainPage.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\MainPage.cs",
+              "RelativeDocumentMoniker": "BarhamD968PracticalAssessment\\MainPage.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\BarhamD968PracticalAssessment\\BarhamD968PracticalAssessment\\MainPage.cs",
+              "RelativeToolTip": "BarhamD968PracticalAssessment\\MainPage.cs",
+              "ViewState": "AgIAAJQAAAAAAAAAAAAqwKMAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T15:35:03.862Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

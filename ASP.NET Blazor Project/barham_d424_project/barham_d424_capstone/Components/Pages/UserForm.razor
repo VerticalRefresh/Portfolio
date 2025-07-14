@@ -1,0 +1,203 @@
+﻿@page "/userform/{UserID:int}"
+
+@using BCrypt.Net
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using barham_d424_capstone.Data
+@using barham_d424_capstone.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authentication
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject ILogger<UserForm> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+
+<!--Only Production/Owner can elevate roles, Admin can add standard users-->
+@attribute [Authorize(Roles = "Production,Owner,Admin")] 
+
+@rendermode InteractiveServer
+
+<!--Alter title based on new or edit-->
+<h4 class="title-block px-3">@(UserID > 0 ? "Edit User" : "Add New User")</h4>
+
+@if (User == null || User.Role == null) //While loading
+{
+    <p><em>Loading user...</em></p>
+}
+else //Actual edit form
+{
+    <EditForm Model="User" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" FormName="UserForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        
+        <div class="container-fluid px-3">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control custom-input" @bind-Value="User.Name" />
+                <ValidationMessage For="@(() => User.Name)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">User Name</label>
+                <InputText class="form-control custom-input" @bind-Value="User.UserName" />
+                <ValidationMessage For="@(() => User.UserName)" />
+            </div>
+
+            <div class="row">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control custom-input" @bind-Value="User.Email" />
+                    <ValidationMessage For="@(() => User.Email)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <InputText class="form-control custom-input" @bind-Value="User.Phone" />
+                    <ValidationMessage For="@(() => User.Phone)" />
+                </div>
+            </div>
+
+            @if (CanEditRoles) //Only for production/owner
+            {
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <InputSelect class="form-control custom-input" @bind-Value="User.RoleID">
+                        <option value="">-- Select Role --</option>
+                        @foreach (var role in Roles)
+                        {
+                            <option value="@role.RoleID">@role.RoleName</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => User.RoleID)" />
+                </div>
+            }
+
+                <button class="btn btn-primary" type="submit">Save</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+
+
+            @if (User.RoleID < AuthRole || AuthRole < 3) //Only reset if higher auth than user being reset, production and owner can reset any
+            {
+                <button type="button" class="btn btn-secondary" @onclick="ResetPasswordConfirmationHandler">Reset Password</button>
+            }
+        </div>
+    </EditForm>
+
+     
+    @if(ResetPasswordConfirmation) //Password reset check
+    {
+        <div class="alert alert-danger">
+            <p>Are you sure you want to reset the password for this user?</p>
+            <button class="btn btn-danger" @onclick="() => ResetPassword()">Yes</button>
+            <button class="btn btn-secondary" @onclick="() => ResetPasswordConfirmation = false">No</button>
+        </div>
+    }
+}
+
+@code
+{
+    // UserID passed in from Users page
+    [Parameter] public int UserID { get; set; }
+
+    // User object to hold form data
+    private User? User { get; set; } = new User();
+
+    // List of roles for dropdown selection
+    private List<UserRole> Roles { get; set; } = new List<UserRole>();
+
+    // Flag to determine if the user can edit roles
+    private bool CanEditRoles { get; set; } = false;
+
+    // Confirmation for resetting password
+    private bool ResetPasswordConfirmation { get; set; } = false;
+
+    private int AuthRole { get; set; } = 4;
+
+    // Gets auth state to check user roles
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))  //Checks if it's a new user for UserAddedID
+        {
+            AuthRole = userId;
+        }
+
+        // Admin not allowed to elevate roles
+        CanEditRoles = user.IsInRole("Owner") || user.IsInRole("Production");
+        Roles = await DbContext.Roles.ToListAsync();
+
+        // If the user is not new, get them from the database
+        if (UserID > 0)
+        {
+            User = await DbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.UserID == UserID);
+        }
+        else
+        {
+            User = new User
+                {
+                    Name = string.Empty,
+                    UserName = string.Empty,
+                    PasswordHash = "",// Example password, will be replaced on submit with hashed default password
+                    Email = string.Empty,
+                    Role = Roles.FirstOrDefault(r => r.RoleID == 4), //Default to User role
+                    Phone = string.Empty,
+                    NewPassword = true
+                };
+        }
+    }
+
+    // Good submit handler
+    private async Task HandleValidSubmit()
+    {
+        if (UserID == 0)
+        {
+            User.PasswordHash = BCrypt.HashPassword($"Temp{User.UserName}123!"); //set default for new user
+            DbContext.Users.Add(User);
+        }
+        else
+        {
+            // Existing user, update their details
+            DbContext.Users.Update(User);
+        }
+
+        // Save changes to the database
+        await DbContext.SaveChangesAsync();
+
+        //Return to summary page
+        NavigationManager.NavigateTo("/users", forceLoad: true);
+    }
+
+    // Invalid submit handler
+    private void HandleInvalidSubmit()
+    {
+        Logger.LogWarning("Invalid form submission.");
+    }
+
+    //handles password reset confirmation UI
+    private void ResetPasswordConfirmationHandler()
+    {
+        ResetPasswordConfirmation = true;
+    }
+
+    // Method to reset password confirmation
+    private async Task ResetPassword()
+    {
+
+        User.PasswordHash = BCrypt.HashPassword($"Temp{User.UserName}123!"); // Example password, should be replaced with a secure method
+        User.NewPassword = true; // Flag to indicate that the password has been reset
+        User.FailedLoginAttempts = 0; // Reset failed login attempts
+        User.LockoutEnd = null; // Clear any lockout
+        DbContext.Users.Update(User);
+        ResetPasswordConfirmation = false;
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/users", forceLoad: true);
+    }
+}
+

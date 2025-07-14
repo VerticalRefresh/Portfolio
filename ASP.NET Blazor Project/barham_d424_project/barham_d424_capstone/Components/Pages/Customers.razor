@@ -1,0 +1,65 @@
+﻿@page "/customers"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+
+@inject AppDbContext DbContext
+
+@attribute [Authorize]
+
+<div class="container">
+    <h3>Customers</h3>
+
+    <CustomerSummary
+        Customers="CustomerList"
+        customerBalances="CustomerBalances"
+        OnCustomerSelected="HandleCustomerSelected"
+        OnCustomerDeleted="HandleCustomerDeleted"
+        EditPage="true"/>
+
+    <NavLink href="/dashboard" class="btn btn-primary">Dashboard</NavLink>
+
+</div>
+
+@code {
+    public List<Customer> CustomerList { get; set; } = new();
+
+    private Customer? SelectedCustomer;
+
+    public Dictionary<int, decimal> CustomerBalances { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CustomerList = await DbContext.Customers.Include(c => c.Address).ToListAsync();
+
+        CustomerBalances = await DbContext.Orders
+        .Where(o => o.OrderTotal > o.AmountPaid)
+        .GroupBy(o => o.CustomerID)
+        .Select(g => new
+        {
+            CustomerID = g.Key,
+            Balance = g.Sum(o => o.OrderTotal - o.AmountPaid)
+        })
+        .ToDictionaryAsync(x => x.CustomerID, x => x.Balance);
+    }
+
+    private void HandleCustomerSelected(Customer customer)
+    {
+        SelectedCustomer = customer;
+    }
+
+    private async Task HandleCustomerDeleted(Customer customer)
+    {
+        DbContext.Customers.Remove(customer);
+        await DbContext.SaveChangesAsync();
+
+        CustomerList.Remove(customer);
+
+        StateHasChanged();
+    }
+}

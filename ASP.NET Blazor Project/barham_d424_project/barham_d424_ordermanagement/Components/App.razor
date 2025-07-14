@@ -1,0 +1,30 @@
+﻿<!--Styling-->
+<HeadOutlet @rendermode="InteractiveServer" />
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using barham_d424_ordermanagement
+@using System.Security.Claims
+
+
+
+<!--Authentication-->
+<CascadingAuthenticationState>
+
+    <!--Routing-->
+    <Router AppAssembly="@typeof(App).Assembly">
+        
+        <!--Found Context for route-->
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        </Found>
+
+        <!--Not Found Context for route-->
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

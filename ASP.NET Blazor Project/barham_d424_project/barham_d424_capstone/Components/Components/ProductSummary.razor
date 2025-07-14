@@ -1,0 +1,350 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@using barham_d424_capstone.Components.Pages
+
+@inject NavigationManager Navigation
+@inject AppDbContext DbContext
+@inject ILogger<ProductSummary> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+
+@rendermode InteractiveServer
+
+<!--Used on multiple pages, only editable on products page accessible by Admin+-->
+@attribute [Authorize]
+
+<!--Title-->
+<h3 class="m-3">Products</h3>
+
+@if (Products == null) //Loading
+{
+    <p><em>Loading products...</em></p>
+}
+else //Full View
+{
+    <!--Filtering and search-->
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <input type="text" class="form-control" placeholder="Search..." @bind="SearchTerm" @bind:event="oninput"/>
+            </div>
+
+            <div class="col-md-4">
+                <select class="form-select" @bind="SelectedCategoryID">
+                    <option value="0">All Categories</option>
+                     @foreach (var category in Categories)
+                    {
+                        <option value="@category.ProductCategoryID">@category.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2"> <!--For sorting by price-->
+                <button class="btn btn-outline-secondary w-100" @onclick="ToggleSort">Price @(SortAscending ? "↑" : "↓")</button>
+            </div>
+        </div>
+        
+        <!--Products Table-->
+        <div class="table-striped" style="max-height: 500px; overflow-y: auto;">
+            <table class="table table-hover align-middle table-bordered table-striped">
+                <thead class="table-dark"> <!--Column Names-->
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th> 
+                        <th>Category</th>
+                        <th>Per Order</th>
+                        <th>In Stock</th>
+                        @if (AllowEdit)
+                        {
+                            <th>Actions</th>
+                        }
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var product in FilteredProducts)
+                    {
+                            @if (editingProductId == product.ID && AllowEdit) //Edit inputs for product editing
+                            {
+                            <tr>
+                                <td>@product.ID</td> <!--Product ID -- not editable-->
+
+                                <td><InputText class="form-control" @bind-Value="product.Name" /></td> <!--Name-->
+
+                                <td><InputText class="form-control" @bind-Value="product.Description" /></td> <!--Description-->
+
+                                <td><InputNumber class="form-control" @bind-Value="product.Price" /></td> <!--Price-->
+
+                                <td> <!--Category Picker-->
+                                    <InputSelect class="form-control" @bind-Value="product.CategoryId"> 
+                                        <option value="0">Select Category</option>
+                                        @foreach (var category in Categories)
+                                        {
+                                            <option value="@category.ProductCategoryID">@category.Name</option>
+                                        }
+                                    </InputSelect>
+                                </td>
+
+                                <td><InputNumber class="form-control" @bind-Value="product.NumberPerOrder" /></td> <!--Number ordered % Number Per Order == 0-->
+
+                                <td><InputNumber class="form-control" @bind-Value="product.NumberInStock" /></td> <!--Number ordered LessThanEqual Number in Stock-->
+
+                                <td> <!--Edit/Delete buttons-->
+                                    <button class="btn btn-primary btn-sm" @onclick="() => SaveProduct(product)">Save</button>
+                                    <button class="btn btn-secondary btn-sm" @onclick="@(() => editingProductId = null)">Cancel</button>
+                                </td>
+                            </tr>
+                            }
+                            else
+                            {
+                            <!--Allows selection of rows only on non edit pages, IE Order-->
+                            <tr class="@(SelectedProduct?.ID == product.ID ? "table-primary" : "")"
+                                @onclick="(!AllowEdit ? (() => SelectProduct(product)) : null)"
+                                style="curser:@(!AllowEdit ? "pointer" : "default")">
+                                <td>@product.ID</td>
+
+                                <td>@product.Name</td>
+
+                                <td>@product.Description</td> 
+
+                                <td>@product.Price.ToString("C")</td> 
+
+                                <td>@(Categories.FirstOrDefault(c => c.ProductCategoryID == product.CategoryId)?.Name ?? "N/A")</td>
+
+                                <td>@product.NumberPerOrder</td>
+
+                                <td>@product.NumberInStock</td>
+
+
+                                @if (AllowEdit) //Only on editable page, accessible by Admin+
+                                {
+                                    <td>
+                                        <button class="btn btn-primary btn-sm me-2" @onclick="@(() => editingProductId = product.ID)">Edit</button>
+                                        <button class="btn btn-secondary btn-sm" @onclick="@(() => DeleteConfirm(product.ID))">Delete</button>
+                                    </td>
+                                }
+                            </tr>
+                            }
+                        }
+                </tbody>
+            </table>
+        </div>
+
+
+        @if (AllowEdit) //Form for adding a product, only on editable page accessible by Admin+
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-2 p-1">Add Product</h5>
+                </div>
+
+                <div class="card-body">
+                <EditForm Model="newProduct" OnValidSubmit="AddProduct" FormName="AddProductForm">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    
+                    <!--Styling to separate card-->
+                    <div class="row">
+                        <div class="col-md-2 m-2">
+                            <InputText class="form-control" @bind-Value="newProduct.Name" placeholder="Name" />
+                        </div>
+
+                        <div class="col-md-2 m-2">
+                            <InputText class="form-control" @bind-Value="newProduct.Description" placeholder="Description"/>
+                        </div>
+
+                        <div class="col-md-1 m-2">
+                            <InputNumber class="form-control" @bind-Value="newProduct.Price" />
+                        </div>
+
+                        <!--Product categories anticipated to remain relatively fixed.  Product page can be expanded at a later time to include category edits-->
+                        <div class="col-md-2 m-2">
+                            <InputSelect class="form-control" @bind-Value="newProduct.CategoryId">
+                                <option value="0">Select Category</option>
+                                @foreach (var category in Categories)
+                                {
+                                    <option value="@category.ProductCategoryID">@category.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <!--Products ordered in lots-->
+                        <div class="col-md-1 m-2">
+                            <InputNumber class="form-control" @bind-Value="newProduct.NumberPerOrder" />
+                        </div>
+
+                        <div class="col-md-1 m-2">
+                            <InputNumber class="form-control" @bind-Value="newProduct.NumberInStock" />
+                        </div>
+
+                        <!--Add and cancel-->
+                        <div class="col-md-2 d-flex gap-2 m-2">
+                            <button class="btn btn-primary btn-sm" type="submit">Add</button>
+                            <button class="btn btn-secondary btn-sm" @onclick="ResetNewProduct">Reset</button>
+                        </div>
+                        </div>
+                </EditForm>
+                </div>
+            </div>
+        }
+
+        @if (deleteConfirmation) //Only accessible through delete button, on AllowEdit, on editable page by Admin+
+        {
+            <tr>
+                <td colspan="8">
+                    <div class="alert alert-danger">
+                        <p>Are you sure you want to delete this product?</p>
+                        <button class="btn btn-danger" @onclick="() => DeleteProduct(deleteProductId)">Yes</button>
+                        <button class="btn btn-secondary" @onclick="() => deleteConfirmation = false">No</button>
+                    </div>
+                </td>
+            </tr>
+        }
+
+    </div>
+}
+
+
+@code {
+    [Parameter] public List<Product> Products { get; set; } = new(); //List of all products
+
+    [Parameter] public List<ProductCategory> Categories { get; set; } = new(); //Product categories to choose from
+
+    [Parameter] public bool AllowEdit { get; set; } //Page accessor for allowing product edits
+
+    [Parameter] public EventCallback<Product> OnProductSelected { get; set; } //Callback for selection
+
+    private Product newProduct = new Product(); //New Product for editable page
+
+    private Product? SelectedProduct { get; set; }
+
+    private int? editingProductId = null;  //ProductID for editing a product, only on edit page
+
+    private bool deleteConfirmation = false; //Shows delete warning
+
+    private int? deleteProductId = null; //To delete from DB
+
+    private int AuthUserID { get; set; } //For audit trails
+
+    private string SearchTerm { get; set; } = string.Empty; //Filtering
+
+    private int SelectedCategoryID { get; set; } = 0; //Filtering
+
+    private bool SortAscending { get; set; } = true; //Sort
+
+    private IEnumerable<Product> FilteredProducts => Products //Filtered List
+    .Where(p =>
+        (string.IsNullOrWhiteSpace(SearchTerm) ||
+        p.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+        p.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) &&
+        (SelectedCategoryID == 0 || p.CategoryId == SelectedCategoryID))
+    .OrderBy(p => SortAscending ? p.Price : -p.Price);
+
+    private void ToggleSort() //Toggles price asc/desc
+    {
+        SortAscending = !SortAscending;
+    }
+
+    private async Task SelectProduct(Product product) //Support for product selection
+    {
+        SelectedProduct = product;
+        await OnProductSelected.InvokeAsync(product);
+    }
+
+    protected override async Task OnInitializedAsync() //Load AuthUserID for audit trails
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        try
+        {
+            AuthUserID = int.Parse(userIdClaim?.Value);
+            Logger.LogInformation($"AuthUserID: {AuthUserID}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Something off in userID setting.  User: {userIdClaim.Value}, Message: {ex.Message}");
+        }
+        ResetNewProduct(); //Sets the new product to not null
+    }
+
+    private void ResetNewProduct()  //Reset the new product with current time, user
+    {
+        newProduct = new Product
+        {
+            ID = 0,
+            Name = string.Empty,
+            Description = string.Empty,
+            Price = 0.0m,
+            CategoryId = 0,
+            DateAdded = DateTime.UtcNow,
+            DateModified = DateTime.UtcNow,
+            UserAddedID = AuthUserID,
+            UserModifiedID = AuthUserID
+        };
+        Logger.LogInformation($"NewProduct UserID set to {AuthUserID}");
+    }
+
+    private async Task AddProduct()  //Save the new product
+    {
+        if (string.IsNullOrWhiteSpace(newProduct.Name) || newProduct.CategoryId == 0) //Sanity Check
+        {
+            Logger.LogWarning("Product name or category is not set.");
+            return;
+        }
+
+        newProduct.DateAdded = DateTime.UtcNow;
+        newProduct.DateModified = DateTime.UtcNow;
+
+        DbContext.Products.Add(newProduct);
+
+        await DbContext.SaveChangesAsync();
+
+        Products.Add(newProduct);
+
+        ResetNewProduct();
+    }
+
+    private async Task SaveProduct(Product product) //Save edits to existing product
+    {
+        if (string.IsNullOrWhiteSpace(product.Name) || product.CategoryId == 0) //Sanity Check
+        {
+            Logger.LogWarning("Product name or category is not set.");
+            return;
+        }
+
+        product.DateModified = DateTime.UtcNow; //Only sets mod, not created
+        product.UserModifiedID = AuthUserID;
+
+        DbContext.Products.Update(product);
+
+        await DbContext.SaveChangesAsync();
+
+        editingProductId = null;  //Turn off editing on form
+    }
+
+    private void DeleteConfirm(int id)  //Sets delete confirmation warning
+    {
+        deleteProductId = id;
+        deleteConfirmation = true;
+    }
+
+    private async Task DeleteProduct(int? id)  //Delete product after warning
+    {
+        if (id > 0)
+        {
+            var product = Products.FirstOrDefault(p => p.ID == id);
+            if (product != null)
+            {
+                DbContext.Products.Remove(product);
+                await DbContext.SaveChangesAsync();
+                Products.Remove(product);
+            }
+            editingProductId = null;
+        }
+        deleteConfirmation = false;
+    }
+}

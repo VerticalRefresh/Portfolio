@@ -1,0 +1,94 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BA88D00E-611F-43A5-B8C8-2C1813B16723}|Barham_WGUD969_Assessment\\Barham_WGUD969_Assessment.csproj|c:\\users\\theba\\documents\\gitlab - needs review\\barham_wgud969_assessment_revision\\barham_wgud969_assessment\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{BA88D00E-611F-43A5-B8C8-2C1813B16723}|Barham_WGUD969_Assessment\\Barham_WGUD969_Assessment.csproj|solutionrelative:barham_wgud969_assessment\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA88D00E-611F-43A5-B8C8-2C1813B16723}|Barham_WGUD969_Assessment\\Barham_WGUD969_Assessment.csproj|C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\barham_wgud969_assessment\\windows\\mainpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA88D00E-611F-43A5-B8C8-2C1813B16723}|Barham_WGUD969_Assessment\\Barham_WGUD969_Assessment.csproj|solutionrelative:barham_wgud969_assessment\\windows\\mainpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BA88D00E-611F-43A5-B8C8-2C1813B16723}|Barham_WGUD969_Assessment\\Barham_WGUD969_Assessment.csproj|C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\barham_wgud969_assessment\\classes\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BA88D00E-611F-43A5-B8C8-2C1813B16723}|Barham_WGUD969_Assessment\\Barham_WGUD969_Assessment.csproj|solutionrelative:barham_wgud969_assessment\\classes\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "App.config",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\Barham_WGUD969_Assessment\\App.config",
+              "RelativeDocumentMoniker": "Barham_WGUD969_Assessment\\App.config",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\Barham_WGUD969_Assessment\\App.config",
+              "RelativeToolTip": "Barham_WGUD969_Assessment\\App.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-02-13T19:35:46.421Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainPage.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\Barham_WGUD969_Assessment\\Windows\\MainPage.cs",
+              "RelativeDocumentMoniker": "Barham_WGUD969_Assessment\\Windows\\MainPage.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\Barham_WGUD969_Assessment\\Windows\\MainPage.cs",
+              "RelativeToolTip": "Barham_WGUD969_Assessment\\Windows\\MainPage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAOEAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-13T19:28:49.499Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Customer.cs",
+              "DocumentMoniker": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\Barham_WGUD969_Assessment\\Classes\\Customer.cs",
+              "RelativeDocumentMoniker": "Barham_WGUD969_Assessment\\Classes\\Customer.cs",
+              "ToolTip": "C:\\Users\\theba\\Documents\\Gitlab - Needs Review\\Barham_WGUD969_Assessment_revision\\Barham_WGUD969_Assessment\\Classes\\Customer.cs",
+              "RelativeToolTip": "Barham_WGUD969_Assessment\\Classes\\Customer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-06T21:05:45.046Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "FloatingWindowState": {
+        "Id": "5cf425be-b382-4f53-b380-3941cdfc7a0a",
+        "Display": 1,
+        "X": -5,
+        "Y": 0,
+        "Width": 1450,
+        "Height": 1680,
+        "WindowState": 0
+      },
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

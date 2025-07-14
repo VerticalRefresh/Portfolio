@@ -1,0 +1,161 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using barham_d424_capstone.Data
+@using barham_d424_capstone.Models
+@using Microsoft.EntityFrameworkCore
+
+@inject AppDbContext DbContext
+
+@inject ILogger<UserSummary> Logger
+
+@attribute [Authorize(Roles = "Production,Owner,Admin")]
+
+@rendermode InteractiveServer
+
+<!--Title-->
+<h3>User Management</h3>
+
+<!--Filter and Search-->
+<div class="mb-3 row">
+    <div class="col-md-4">
+        <label>Search by name</label>
+        <input type="text" class="form-control" placeholder="Search by name..." @bind="FilterName" @bind:event="oninput" />
+    </div>
+    <div class="col-md-4">
+        <label>Search by ID</label>
+        <input type="number" class="form-control" placeholder="Search by ID..." @bind="FilterID" @bind:event="oninput" />
+    </div>
+    <div class="col-md-4">
+        <label>Search by role</label>
+        <select class="form-select" @bind="FilterRole">
+            <option value="0">All Roles</option>
+            @foreach (var role in Roles)
+            {
+                <option value="@role.RoleID">@role.RoleName</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (users == null) //Loading message
+{
+    <p><em>Loading users...</em></p>
+}
+else if (!users.Any()) //Null check
+{
+    <p>No users found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var user in FilteredUsers)
+            {
+                <tr class=" @(SelectedUser == user ? "table-primary" : "")"
+                    style="cursor:pointer"
+                    @onclick="@(() => SelectUser(user))">
+                    <td>@user.UserID</td>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                    <td>@user.Phone</td>
+                    <td>@user.Role.RoleName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (UserToDelete != null) //Confirmation dialog for deletion
+{
+    <div class="alert alert-danger">
+        <p>Are you sure you want to delete this user?</p>
+        <p><strong>@UserToDelete.Name</strong></p>
+        <button class="btn btn-danger" @onclick="() => DeleteUser()">Yes</button>
+        <button class="btn btn-secondary" @onclick="() => UserToDelete = null">No</button>
+    </div>
+}
+
+<NavLink class="btn btn-secondary" href="/userform/0">New User</NavLink> <!--The edit form won't allow admin to elevate users to Admin+, but can add base level users-->
+
+@if (SelectedUser != null)
+{
+    <NavLink class="btn btn-secondary" href="@($"/userform/{SelectedUser.UserID}")">Edit User</NavLink>
+    <button class="btn btn-danger" @onclick="() => ConfirmDelete(SelectedUser)">Delete User</button>
+}
+
+
+@code 
+{
+    private List<User> users = new List<User>(); //List of users loaded from the database
+
+    private User? SelectedUser { get; set; } //Currently selected user for actions
+    
+    private User? UserToDelete { get; set; } //User selected for deletion confirmation
+
+    [Parameter] public EventCallback<User> OnUserSelected { get; set; } //Callback for when a user is selected
+
+    //Filters
+    public string FilterName { get; set; }
+    public int FilterID { get; set; }
+    public int FilterRole { get; set; }
+
+    private List<UserRole> Roles = new List<UserRole>();//List of roles loaded from the database
+
+    //Filtered users based on search criteria
+    private IEnumerable<User> FilteredUsers => users
+    .Where(u =>
+    (string.IsNullOrWhiteSpace(FilterName) || u.Name.Contains(FilterName, StringComparison.OrdinalIgnoreCase)) &&
+    (FilterRole == 0 || u.RoleID == FilterRole) &&
+    (FilterID == 0 || u.UserID == FilterID));
+
+    protected override async Task OnInitializedAsync() //Initial data load
+    {
+        users = await DbContext.Users
+        .Include(u => u.Role)
+        .ToListAsync();
+
+        Roles = await DbContext.Roles.ToListAsync();
+    }
+
+    private void ConfirmDelete(User user) //Confirm deletion of a user
+    {
+        Logger.LogInformation($"User {user.Name} selected for deletion.");
+        UserToDelete = user;
+    }
+
+    private async Task DeleteUser() //Delete the selected user
+    {
+        if (UserToDelete != null)
+        {
+            Logger.LogInformation($"Deleting user {UserToDelete.Name}.");
+            DbContext.Users.Remove(UserToDelete);
+            await DbContext.SaveChangesAsync();
+            users.Remove(UserToDelete);
+            UserToDelete = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SelectUser(User user) //Select a user for actions
+    {
+        if (SelectedUser == user)
+        {
+            SelectedUser = null;
+        }
+        else
+        {
+            SelectedUser = user;
+        }
+        StateHasChanged();
+        await OnUserSelected.InvokeAsync(SelectedUser);
+    }
+}

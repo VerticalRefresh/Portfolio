@@ -1,0 +1,40 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0" version="26.3.0">
+  <diagram name="Page-1" id="5f0bae14-7c28-e335-631c-24af17079c00">
+    <mxGraphModel dx="2058" dy="1146" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-7" value="Calls" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6Ln3y7SKs2YtiUkxfOJi-1" target="6Ln3y7SKs2YtiUkxfOJi-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-1" value="BlazorUI&lt;div&gt;ASP.NET Core Blazor&lt;/div&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="80" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-8" value="Calls" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6Ln3y7SKs2YtiUkxfOJi-2" target="6Ln3y7SKs2YtiUkxfOJi-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-2" value="OrderController&lt;div&gt;ASP.NET Core&lt;/div&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="220" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-9" value="Saves To" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6Ln3y7SKs2YtiUkxfOJi-3" target="6Ln3y7SKs2YtiUkxfOJi-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-10" value="Uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6Ln3y7SKs2YtiUkxfOJi-3" target="6Ln3y7SKs2YtiUkxfOJi-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-3" value="OrderService&lt;div&gt;Service&lt;/div&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="360" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-4" value="AppDbContext&lt;div&gt;Entity Framework Core&lt;/div&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="500" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-5" value="Migration Tool&lt;div&gt;CLI App&lt;/div&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;" vertex="1" parent="1">
+          <mxGeometry x="670" y="360" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="6Ln3y7SKs2YtiUkxfOJi-6" value="Azure SQL&lt;div&gt;Database&lt;/div&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="660" width="190" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

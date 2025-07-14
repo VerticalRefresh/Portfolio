@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+
+@rendermode InteractiveServer
+
+
+<AuthorizeView>
+    <Authorized>
+        <div class="logout-button">
+            <form action="/logout-handler" method="post">
+                <button type="submit" class="btn btn-danger">Logout</button>    
+            </form>
+        </div>
+    </Authorized>
+</AuthorizeView>
+@code {
+    /*private async Task Logout()
+    {
+        await AuthService.Logout();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }*/
+
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

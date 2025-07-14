@@ -1,0 +1,35 @@
+﻿@page "/dashboard23"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using barham_d424_project.Components
+@inject AuthenticationStateProvider AuthenticationStateProvider
+<h1 class="text-2xl font-semibold mb-4">Dashboard</h1>
+
+@code {
+    private bool isAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAdmin = user.IsInRole("Admin") || user.IsInRole("Owner") || user.IsInRole("Production");
+    }
+}
+<p> isAdmin: @isAdmin</p>
+<OrderSummary DashboardMode="true" />
+
+<div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-4">
+    <NavLink class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center" href="/">
+        Manage Orders
+    </NavLink>
+
+    @if (isAdmin)
+    {
+        <NavLink class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center" href="/">
+            Manage Products
+        </NavLink>
+        <NavLink class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center" href="/">
+            Manage Users
+        </NavLink>
+    }
+</div>

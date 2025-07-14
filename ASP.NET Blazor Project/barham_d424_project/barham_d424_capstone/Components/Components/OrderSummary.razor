@@ -1,0 +1,233 @@
+﻿@using barham_d424_capstone.Data
+@using barham_d424_capstone.Models
+@using Microsoft.EntityFrameworkCore
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavigationManager
+
+<h4>@Title</h4>
+
+@if (orders == null) //Loading blurb
+{
+    <p><em>Loading orders...</em></p>
+}
+else if (!orders.Any()) //Warning
+{
+    <p>No orders found</p>
+    <button class="btn btn-secondary ms-2" @onclick="ClearFilters">Clear Filters</button>
+}
+else
+{
+    @if (IsSelectable)
+    {
+        <div class="row align-items-center mb-2">
+            <div class="col-md-3">
+               <InputText class="form-control" @bind-Value="FilterString" placeholder="Search..."/>
+            </div>
+
+            <div class="col-md-2">
+                <InputSelect class="form-select" @bind-Value="FilterStatus">
+                    <option value="">All</option>
+                    @foreach (var status in Enum.GetValues<OrderStatus>())
+                    {
+                        <option value="@status.ToString()">@status</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="col-md-2">
+                <InputDate DateTimeFormat="yyyy-MM-dd" class="form-control" @bind-Value="FilterFrom" />
+            </div>
+
+            <div class="col-md-2">
+                <InputDate DateTimeFormat="yyyy-MM-dd" class="form-control" @bind-Value="FilterTo" />
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-primary" @onclick="FilterOrders">Apply</button>
+                <button class="btn btn-secondary ms-2" @onclick="ClearFilters">Clear</button>
+            </div>
+
+        </div>
+    }
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>User</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var order in orders)
+            {
+                <tr class="@(SelectedOrder == order ? "table-primary" : "")"
+                    @onclick="(IsSelectable ? (() => SelectOrder(order)) : null)"
+                    style="cursor:@(IsSelectable ? "pointer" : "default")">
+                    <td>@order.OrderID</td>
+                    <td>@order.Customer?.Name</td>
+                    <td>@order.User?.Name</td>
+                    <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
+                    <td>@order.OrderTotal.ToString("C")</td>
+                    <td>@order.AmountPaid.ToString("C")</td>
+                    <td>@order.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+  
+        <button class="btn btn-primary" @onclick="AddOrder">Add Order</button>
+        @if (SelectedOrder != null && SelectedOrder.OrderID > 0)
+        {
+            <button class="btn btn-secondary" @onclick="EditOrder">Edit</button>
+            <button class="btn btn-danger" @onclick="CancelConfirm">Cancel Order</button>
+        }
+
+  
+        
+
+
+    if (cancelConfirm)
+    {
+        <div class="alert-danger">
+            <p>Are you sure you want to cancel order @SelectedOrder.OrderID</p>
+            <button class="btn btn-danger" @onclick="CancelOrder">Yes</button>
+            <button class="btn btn-secondary" @cancelConfirm = "false">No</button>
+        </div>
+    }
+
+}
+@code {
+    private List<Order> orders = new List<Order>();
+
+    [Parameter] public string Title { get; set; } = "Order Summary";
+    [Parameter] public bool IsSelectable { get; set; } = false;
+    [Parameter] public EventCallback<Order> OnOrderSelected { get; set; }
+    [Parameter] public DateTime? FilterFrom { get; set; }
+    [Parameter] public DateTime? FilterTo { get; set; }
+    public string FilterStatus { get; set; }
+    public string FilterString { get; set; }
+
+
+
+    public Order? SelectedOrder { get; set; }
+
+    public bool cancelConfirm = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await FilterOrders();
+    }
+
+    private async Task FilterOrders()
+    {
+        var query = DbContext.Orders
+        .Include(o => o.Customer)
+        .Include(o => o.User)
+        .AsQueryable();
+
+        if (FilterFrom.HasValue)
+        {
+            query = query.Where(o => o.OrderDate >= FilterFrom.Value);
+        }
+        if (FilterTo.HasValue)
+        {
+            query = query.Where(o => o.OrderDate <= FilterTo.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(FilterStatus))
+        {
+            query = query.Where(o => o.Status.ToString() == FilterStatus);
+        }
+
+        if (!string.IsNullOrWhiteSpace(FilterString))
+        {
+            query = query.Where(o =>
+            o.Customer.Name.Contains(FilterString) ||
+            o.User.Name.Contains(FilterString));
+        }
+
+        orders = await query.ToListAsync();
+    }
+    private async Task SelectOrder(Order order)
+    {
+        if (SelectedOrder == order)
+        {
+            SelectedOrder = null;
+        }
+        else
+        {
+            SelectedOrder = order;
+            await OnOrderSelected.InvokeAsync(order);
+        }
+    }
+
+    private async Task ClearFilters()
+    {
+        FilterFrom = null;
+        FilterTo = null;
+        FilterStatus = string.Empty;
+        FilterString = string.Empty;
+
+        await FilterOrders();
+    }
+
+    private void HandleOrderSelected(Order order)
+    {
+        if (order?.OrderID > 0)
+        {
+
+        }
+    }
+
+    private void AddOrder()
+    {
+        NavigationManager.NavigateTo($"/orderform/0", forceLoad: true);
+    }
+
+    private void EditOrder()
+    {
+        if (SelectedOrder != null)
+        {
+            NavigationManager.NavigateTo($"/orderform/{SelectedOrder.OrderID}", forceLoad: true);
+        }
+    }
+
+    private void CancelConfirm()
+    {
+        cancelConfirm = true;
+    }
+
+    private async Task CancelOrder()
+    {
+        if (SelectedOrder != null)
+        {
+            if (SelectedOrder.AmountPaid == 0 && (SelectedOrder.Status == OrderStatus.Pending || SelectedOrder.Status == OrderStatus.Processing))
+            {
+                SelectedOrder.Status = OrderStatus.Cancelled;
+                DbContext.Orders.Update(SelectedOrder);
+                await DbContext.SaveChangesAsync();
+                SelectedOrder = null;
+                cancelConfirm = false;
+            }
+            else
+            {
+                cancelConfirm = false;
+            }
+        }
+
+        await OnParametersSetAsync();
+
+    }
+
+    private void DashboardNav()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
+}

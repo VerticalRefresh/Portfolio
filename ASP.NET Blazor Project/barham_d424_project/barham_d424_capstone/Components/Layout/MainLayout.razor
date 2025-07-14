@@ -1,0 +1,34 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+
+<script src="js/download.js"></script>
+<CascadingAuthenticationState>
+    <div class="page">
+
+        <main>
+
+            <article class="content px-4">
+                @Body
+            </article>
+
+            <div class="m-3 ps-3">
+                <AuthButton /> <!--For secure logout-->
+            </div>
+        </main>
+    </div>
+</CascadingAuthenticationState>
+    <div class="footer text-center">
+        <p>© 2024 Barham D424 Capstone Project</p>
+    </div>
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+    @code
+{
+
+    }

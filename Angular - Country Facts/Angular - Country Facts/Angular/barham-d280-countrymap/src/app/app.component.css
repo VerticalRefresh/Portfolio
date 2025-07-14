@@ -1,0 +1,11 @@
+#mainPage {
+    display: flexbox;
+    background-color: gray;
+    justify-content: center;
+    align-content: center;
+    justify-items: center;
+    align-items: center;
+    justify-self: center;
+    align-self: center;
+}
+

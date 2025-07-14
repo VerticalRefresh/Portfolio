@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Barham_C971.Controls.AssessmentBlock"
+             x:Name="Root"
+             xmlns:local="clr-namespace:Barham_C971.DataClasses"
+             x:DataType="local:Assessment">
+    
+    <!--Container for control-->
+    <Border Style="{StaticResource AssessmentBlockBorder}">
+        
+        <!--Layout-->
+        <Grid
+            Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!--Assessment Name-->
+            <Label Text="{Binding AssessmentName}"
+                   Grid.Column="0" Grid.Row="1"
+                   Style="{StaticResource AssessmentBlockNameText}"/>
+            
+            <!--Assessment Status-->
+            <Label Text="{Binding AssessmentStatus}"
+                   Grid.Column="1" Grid.Row="1"
+                   HorizontalOptions="Center"
+                   Style="{StaticResource AssessmentBlockNameText}"/>
+
+            <!--Start and End Dates-->
+            <DatePicker Date="{Binding AssessmentStartDate}"
+                        Grid.Column="2" Grid.Row="0"
+                        Style="{StaticResource AssessmentBlockDate}"/>
+            
+            <DatePicker Date="{Binding AssessmentEndDate}"
+                        Grid.Column="2" Grid.Row="2"
+                        Style="{StaticResource AssessmentBlockDate}"/>
+        </Grid>
+    </Border>
+</ContentView>

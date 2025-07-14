@@ -1,0 +1,390 @@
+﻿@page "/orderform/{OrderID:int}"
+
+@using Microsoft.AspNetCore.Authorization
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+@using System.Security.Claims
+
+@using barham_d424_capstone.Data
+
+@using barham_d424_capstone.Models
+
+@using Microsoft.EntityFrameworkCore
+
+@using Microsoft.AspNetCore.Authentication
+
+@inject AppDbContext DbContext
+
+@inject NavigationManager NavigationManager
+
+@inject ILogger<OrderForm> Logger
+
+@inject AuthenticationStateProvider AuthStateProvider
+
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+
+<h3>Order Form</h3>
+
+<!--Customer form for selecting customer, Remove if OrderID > 0-->
+@if (Order.OrderID > 0)
+{
+    <div class="card">
+        <div class="card-body">
+    <div class="table-responsive-md m-3">
+        <table class="table-info table-bordered">
+            <thead>
+               <tr>
+                   <th class="p-3">Customer</th>
+                   <th class="p-3">Email</th>
+                   <th class="p-3">Phone</th>
+                   <th class="p-3">Address</th>
+               </tr> 
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="p-3">@Order.Customer.Name</td>
+                    <td class="p-3">@Order.Customer.Email</td>
+                    <td class="p-3">@Order.Customer.Phone</td>
+                    <td class="p-3">
+                        <div>
+                            @Order.Customer.Address.Address1
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(Order.Customer.Address.Address2))
+                        {
+                            <div>
+                               @Order.Customer.Address.Address2
+                            </div>
+                        }
+                        <div>
+                            @($"{Order.Customer.Address.City}, {Order.Customer.Address.StateCode} {Order.Customer.Address.ZipCode}")
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+        </div>
+    </div>
+}
+else
+{
+<div class="m-3 card">
+    <div class="card-header">
+        Select Customer
+    </div>
+    <div class="card-body">
+    <CustomerSummary
+        Customers="Customers"
+        customerBalances="Balances"
+        EditPage="false"
+        OnCustomerSelected="HandleCustomerSelected"/>
+        </div>
+</div>
+}
+@if (!IsOrderReadOnly)
+{
+    <input type="checkbox" @bind="UseCustomerAddress" class="m-3"/>
+    <label>Use Customer Address</label>
+}
+
+@if(!UseCustomerAddress)
+{
+    @if (!IsOrderReadOnly)
+    {
+        <div class="card">
+            <div class="card-header">
+                Shipping Address
+            </div>
+            <div class="card-body">
+        <EditForm Model="Order" FormName="AddressForm" OnValidSubmit="HandleValidSubmit" class="m-3">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+            <div class="mb-3">
+                <label class="form-label">Address Line 1</label>
+                <InputText class="form-control" @bind-Value="Order.ShippingAddress.Address1"/>
+                <ValidationMessage For="@(() => Order.ShippingAddress.Address1)"/>
+                <label class="form-label">Address Line 2</label>
+                <InputText class="form-control" @bind-Value="Order.ShippingAddress.Address2" />
+                <ValidationMessage For="@(() => Order.ShippingAddress.Address2)" />
+
+                <div class="row">
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label">City</label>
+                        <InputText class="form-control" @bind-Value="Order.ShippingAddress.City" />
+                        <ValidationMessage For="@(() => Order.ShippingAddress.City)" />
+                    </div>
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label">State Code</label>
+                        <InputText class="form-control" @bind-Value="Order.ShippingAddress.StateCode" />
+                        <ValidationMessage For="@(() => Order.ShippingAddress.StateCode)" />
+                    </div>
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label">Zip Code</label>
+                        <InputText class="form-control" @bind-Value="Order.ShippingAddress.ZipCode" />
+                        <ValidationMessage For="@(() => Order.ShippingAddress.ZipCode)" />
+                    </div>
+                </div>
+                <label class="form-label">Country</label>
+                <InputText class="form-control" @bind-Value="Order.ShippingAddress.Country" />
+                <ValidationMessage For="@(() => Order.ShippingAddress.Country )" />
+            </div>
+        </EditForm>
+            </div>
+        </div>
+    }
+}
+@if (IsOrderReadOnly)
+{
+    <div class="m-3">
+        <h3>Shipping Address</h3>
+        <div>@Order.ShippingAddress.Address1</div>
+        @if (!string.IsNullOrWhiteSpace(Order.ShippingAddress.Address2))
+        {
+            <div>@Order.ShippingAddress.Address2</div>
+        }
+        <div class="row">
+            <div class="col-md-3">@Order.ShippingAddress.City, @Order.ShippingAddress.StateCode @Order.ShippingAddress.ZipCode</div>
+        </div>
+        <div>@Order.ShippingAddress.Country</div>
+    </div>
+}
+
+<!--Order Items, bound to Order.OrderItems-->
+<div class="card">
+    <div class="card-body">
+    <OrderItems
+        Items="Order.OrderItems"
+        Order="Order" 
+        Products="Products"
+        CanEdit="!IsOrderReadOnly"/>
+    </div>
+</div>
+@if (!string.IsNullOrWhiteSpace(QuantityAdjustmentMessage))
+{
+    <div class="alert alert-warning">@QuantityAdjustmentMessage</div>
+}
+
+<!--Add product to order-->
+@if (SelectedProduct != null)
+{
+    <div class="card m-3 p-3 row">
+        <h5>Add Selected Product To Order</h5>
+        <div class="mb-2">
+            <strong>@SelectedProduct.Name</strong><br />
+            Price: @SelectedProduct.Price.ToString("C") <br />
+            Available: @SelectedProduct.NumberInStock
+        </div>
+        <div class="mb-2">
+            <label>Quantity:</label>
+            <InputNumber class="form-control" @bind-Value="SelectedQuantity" />
+        </div>
+        <div>
+            <button class="btn btn-primary" @onclick="AddProductToOrder">Add to order</button>
+            <button class="btn btn-secondary" @onclick="() => SelectedProduct = null">Cancel</button>
+        </div>
+    </div>
+}
+
+
+@if (!IsOrderReadOnly)
+{
+    <!--Products to select-->
+    <div class="m-3 card">
+        <div class="card-body">
+            <ProductSummary
+            Products = "Products"
+            Categories = "Categories"
+            AllowEdit = "false"
+            OnProductSelected="HandleProductSelected" />
+        </div>
+    </div>
+}
+
+<div class="btn-group">
+    @if (!IsOrderReadOnly)
+    {
+        <button class="btn btn-secondary" @onclick="HandleValidSubmit">Save Order</button>
+    }
+    <button class="btn btn-primary" @onclick="Cancel">Cancel</button>
+    <button class="btn btn-primary" @onclick="DashboardNav">Dashboard</button>
+</div>
+
+
+@code {
+
+    [Parameter] public int OrderID { get; set; } //Set if editing an order
+
+    public Order Order { get; set; } = new Order(); //Get the full order and populate fields
+
+    public List<Product> Products { get; set; } //For injecting into ProductSummary
+
+    private int SelectedQuantity { get; set; } = 1; 
+
+    private Customer? SelectedCustomer; //For selecting customer
+
+    private Product? SelectedProduct; //From ProductSummary
+
+    public List<ProductCategory> Categories { get; set; } //To pass into the Products list
+
+    public List<Customer> Customers { get; set; } = new(); //To pass into the customers list
+
+    public Dictionary<int, decimal> Balances { get; set; } = new(); //to pass into the customers list
+
+    private int UserID; //from Authstate
+
+    private string? QuantityAdjustmentMessage;
+
+    private bool UseCustomerAddress { get; set; } = true;  //UI logic for shipping address
+
+    private bool IsOrderReadOnly =>
+    Order.Status == OrderStatus.Shipped ||
+    Order.Status == OrderStatus.Delivered ||
+    Order.Status == OrderStatus.Cancelled;
+
+    private void HandleProductSelected(Product product) //Handle selection from ProductSummary
+    {
+        SelectedProduct = product;
+        SelectedQuantity = 1;
+    }
+
+    private void HandleCustomerSelected(Customer customer) //Handle selection from Customer list
+    {
+        SelectedCustomer = customer;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (OrderID > 0) // Get the order and order items
+        {
+            Order = await DbContext.Orders.Include(o => o.Customer).Include(o => o.User).Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.OrderID == OrderID);
+
+            if (Order == null) //Null validation logic
+            {
+                Logger.LogWarning($"Order with ID {OrderID} not found.");
+                NavigationManager.NavigateTo("/orders", forceLoad: true);
+            }
+        }
+        else //Make a new one
+        {
+            Order = new Order();
+            Order.OrderItems = new List<OrderItem>();
+            Order.ShippingAddress = new Address();
+            Order.Status = OrderStatus.Pending;
+        }
+
+        //Get the userID for population into the Order
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userIdClaim = authState.User.FindFirst(ClaimTypes.NameIdentifier);
+        UserID = int.TryParse(userIdClaim?.Value, out var uid) ? uid : 0;
+        Logger.LogInformation($"UserID set to: {UserID}");
+
+        //Get customers for customer list
+        Customers = await DbContext.Customers.Include(c => c.Address).ToListAsync();
+
+        //Get balances for customers
+        Balances = await DbContext.Orders
+            .Where(o => o.OrderTotal > o.AmountPaid)
+            .GroupBy(o => o.CustomerID)
+            .Select(g => new
+            {
+                CustomerID = g.Key,
+                Balance = g.Sum(o => o.OrderTotal - o.AmountPaid)
+            })
+            .ToDictionaryAsync(x => x.CustomerID, x => x.Balance);
+
+        //Get products for products list
+        Products = await DbContext.Products.ToListAsync(); //Put products into ProductSummary
+
+        //Get categories for product categories
+        Categories = await DbContext.ProductCategories.ToListAsync();
+    }
+
+    //When submitting the form for save/add
+    private async Task HandleValidSubmit()
+    {
+        if (Order == null)
+        {
+            Logger.LogWarning("Null order");
+            return;
+        }
+        if (OrderID > 0)
+        {
+            Order.OrderTotal = Order.OrderItems.Sum(i => i.Quantity * i.PriceAtOrder);
+            DbContext.Orders.Update(Order);
+        }
+        else if (OrderID == 0)
+        {
+            if (SelectedCustomer == null) //Null check warning
+            {
+                Logger.LogWarning("No customer selected");
+                return;
+            }
+            if (UseCustomerAddress && OrderID == 0)
+            {
+                Order.ShippingAddress = SelectedCustomer.Address;
+            }
+
+            Order.CustomerID = SelectedCustomer.CustomerId; //Customer ID for DB context
+            Order.UserID = UserID; //UserID for DB context
+            Order.OrderTotal = Order.OrderItems.Sum(i => i.Quantity * i.PriceAtOrder); //Update the order total
+            Order.Status = OrderStatus.Pending; //Set if new order, otherwise leave.
+            Order.OrderDate = DateTime.UtcNow; //OrderDate only changed if new order
+            Order.AmountPaid = 0; //Only set to 0 for new order
+            DbContext.Orders.Add(Order);
+        }
+
+        await DbContext.SaveChangesAsync(); //Update the DB
+
+        Logger.LogInformation($"Order {(OrderID > 0 ? "updated" : "created")} successfully.");
+
+        NavigationManager.NavigateTo("/orders", true); //Return to orders page        
+    }
+
+    private void HandleInvalidSubmit()  //Something went wrong
+    {
+        Logger.LogWarning("Order form submission failed validation.");
+    }
+
+    private void AddProductToOrder() //Adds product to the order.orderitems
+    {
+        if (SelectedProduct == null || SelectedQuantity <= 0) return; //Sanity check
+
+        int multiple = SelectedProduct.NumberPerOrder > 0 ? SelectedProduct.NumberPerOrder : 1;
+        int roundedQuantity = (int)Math.Ceiling(SelectedQuantity / (double)multiple) * multiple;
+
+        if (roundedQuantity != SelectedQuantity)
+        {
+            QuantityAdjustmentMessage = $"Quantity rounded up to nearest multiple of {multiple}.";
+        }
+
+        var item = new OrderItem //Prepares the new OrderItem from the selected product
+            {
+                ProductID = SelectedProduct.ID,
+                Product = SelectedProduct,
+                Quantity = roundedQuantity,
+                PriceAtOrder = SelectedProduct.Price
+            };
+
+        Order.OrderItems ??= new List<OrderItem>(); //Makes a new list if there isn't already one, good for new orders
+
+        Order.OrderItems.Add(item); //Pop it in there
+
+        SelectedProduct = null; //Deselect
+
+        SelectedQuantity = 1; //Initialize quantity
+    }
+
+    private void Cancel()  //leave
+    {
+        NavigationManager.NavigateTo("/orders");
+    }
+
+    private void DashboardNav()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
+
+}

@@ -1,0 +1,48 @@
+﻿@page "/reports"
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using barham_d424_capstone.Models
+
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+<h3>Reports</h3>
+
+<div class="btn-group mb-4">
+    <button class="btn btn-primary" @onclick="@(() => selectedReport = "customer")">Orders by Customer</button>
+    <button class="btn btn-primary" @onclick="@(() => selectedReport = "user")">Orders by User</button>
+    <button class="btn btn-primary" @onclick="@(() => selectedReport = "sales")">Product sales report</button>
+    <button class="btn btn-primary" @onclick="@(() => selectedReport = "balances")">Customer balance report</button>
+</div>
+
+@switch (selectedReport)
+{
+    case "customer":
+        <OrdersByCustomer/>
+        break;
+    case "user":
+        <OrdersByUser/>
+        break;
+    case "sales":
+        <ProductSales/>
+        break;
+    case "balances":
+        <CustomerBalances/>
+        break;
+}
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="BackToDash">Dashboard</button>
+</div>
+
+@code {
+    private string selectedReport = "customer";
+
+    private void BackToDash()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+}

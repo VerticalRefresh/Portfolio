@@ -1,0 +1,102 @@
+﻿@using System.Text
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext DbContext
+@inject ILogger<OrdersByCustomer> Logger
+@inject IJSRuntime JS
+
+@rendermode InteractiveServer
+
+<h3>Customer Balances</h3>
+<p class="text-muted">Generated on @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p>
+@if (ReportData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!ReportData.Any())
+{
+    <p>No customers found.</p>
+}
+else
+{
+    <button class="btn btn-secondary mb-3" @onclick="ExportCsv">Download CSV</button>
+}
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Total Ordered</th>
+            <th>Total Paid</th>
+            <th>Total Balance</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var entry in ReportData)
+        {
+            <tr>
+                <td>@entry.Name</td>
+                <td>@entry.Email</td>
+                <td>@entry.TotalOrdered.ToString("C")</td>
+                <td>@entry.TotalPaid.ToString("C")</td>
+                <td>@entry.TotalBalance.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<CustomerBalanceReport> ReportData { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ReportData = await DbContext.Orders
+        .Include(o => o.Customer)
+        .GroupBy(o => new { o.Customer.CustomerId, o.Customer.Name, o.Customer.Email })
+        .Select(g => new CustomerBalanceReport
+        {
+            CustomerId = g.Key.CustomerId,
+            Name = g.Key.Name,
+            Email = g.Key.Email,
+            TotalOrdered = g.Sum(o => o.OrderTotal),
+            TotalPaid = g.Sum(o => o.AmountPaid),
+            TotalBalance = g.Sum(o => (o.OrderTotal - o.AmountPaid))
+        })
+        .OrderByDescending(r => r.TotalBalance)
+        .ToListAsync();
+
+        Logger.LogInformation($"Loaded {ReportData.Count} customer order summaries");
+    }
+
+    private async Task ExportCsv()
+    {
+        var csv = new StringBuilder();
+        csv.AppendLine($"Customer Balances Report, Generated on {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        csv.AppendLine();
+        csv.AppendLine("Customer, Email, Total Orders, Total Value");
+        foreach (var row in ReportData)
+        {
+            csv.AppendLine($"\"{row.Name}\", \"{row.Email}\", {row.TotalOrdered}, {row.TotalPaid}, {row.TotalBalance}");
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+
+        var fileName = $"Report-{DateTime.Now:yyyyMMdd}.csv";
+
+        var fileContent = new MemoryStream(bytes);
+
+        using var streamRef = new DotNetStreamReference(stream: fileContent);
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+
+    private class CustomerBalanceReport
+    {
+        public int CustomerId { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public decimal TotalOrdered { get; set; }
+        public decimal TotalPaid { get; set; }
+        public decimal TotalBalance { get; set; }
+    }
+}

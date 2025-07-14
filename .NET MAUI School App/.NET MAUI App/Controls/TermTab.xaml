@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Barham_C971.Controls.TermTab"
+             x:Name="Root">
+    
+    <Border Style="{StaticResource TabBorder}"
+            x:Name="CourseBlock">
+        <Button Text="{Binding TabText, Source={x:Reference Root}}"
+                x:Name="TermButton"
+                InputTransparent="True"
+                Style="{StaticResource TermTabButton}"/>
+    </Border>
+</ContentView>

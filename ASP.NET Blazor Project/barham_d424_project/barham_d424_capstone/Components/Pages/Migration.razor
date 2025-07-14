@@ -1,0 +1,346 @@
+﻿@page "/migration"
+
+@using System.Globalization
+@using System.Text.Json
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using barham_d424_capstone.Models
+@using CsvHelper
+@using Microsoft.AspNetCore.Components.Forms
+@using BCrypt
+
+@inject ILogger<Migration> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+@inject AppDbContext DbContext
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+
+
+<h3>Data Migration</h3>
+
+<div class="mb-3"> <!--Selector for upload-->
+    <label for="entitySelect">Select Target Table:</label>
+    <select id="entitySelect" class="form-select" @bind="SelectedEntity">
+        <option disabled value="">-- Select Table --</option>
+        <option value="Customers">Customers</option>
+        <option value="Users">Users</option>
+        <option value="Products">Products</option>
+    </select>
+</div>
+
+<InputFile OnChange="HandleFileUpload" class="form-control mb-3" /> <!--File Uploader-->
+
+@if (PreviewData?.Any() == true) //Data from the CSV
+{
+    <h5>Preview</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                @foreach (var col in PreviewHeaders)
+                {
+                    <th>@col</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in PreviewData)
+            {
+                <tr class="@(row.IsValid ? "" : "table-danger")">
+                    @foreach (var value in row.Values)
+                    {
+                        <td>@value</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-success" @onclick="SaveToDatabase" disabled="@(PreviewData.All(r => r.IsValid) == false)">Save Valid Rows</button>
+}
+
+@if (UploadErrors.Any()) //Tracks errors and lists for csv correction
+{
+    <div class="alert alert-danger mt-3">
+        <h5>Errors</h5>
+        <ul>
+            @foreach (var err in UploadErrors)
+            {
+                <li>@err</li>
+            }
+        </ul>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(SuccessMessage)) //Notifies good upload
+{
+    <div class="alert alert-success mt-3">@SuccessMessage</div>
+}
+
+    <button class="btn btn-primary" @onclick="BackToDash">Dashboard</button>
+
+
+@code {
+
+    private string SelectedEntity = string.Empty; //From Selector
+
+    private List<string> UploadErrors = new(); //Lists of errors for upload for display
+
+    private string? SuccessMessage; //Shows success message
+
+    private List<string> PreviewHeaders = new(); //Headers for the preview of data
+
+    private List<PreviewRow> PreviewData = new(); //Data from CSV 
+
+    private int UserID { get; set; } //For setting audit data
+
+    protected override async Task OnInitializedAsync()  //Get the UserID for audit trails
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userIdClaim = authState.User.FindFirst(ClaimTypes.NameIdentifier);
+        UserID = int.TryParse(userIdClaim?.Value, out var uid) ? uid : 0;
+        Logger.LogInformation($"UserID set to: {UserID}");
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e) //Called when file input
+    {
+        //Clear our messages
+        UploadErrors.Clear();
+        SuccessMessage = null;
+        PreviewData.Clear();
+        PreviewHeaders.Clear();
+
+        var file = e.File; //The file uploaded
+
+        if (file == null || string.IsNullOrWhiteSpace(SelectedEntity))  //Sanity check for upload
+        {
+            UploadErrors.Add("Please select a table and upload a valid CSV file.");
+            return;
+        }
+
+        try
+        {
+            //Slice up the data for use
+
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+
+
+            switch(SelectedEntity)  //Tells us which data to preview
+            {
+                case "Customers":
+                    var customerRecords = new List<CustomerImportModel>();
+
+                    await foreach (var record in csv.GetRecordsAsync<CustomerImportModel>())
+                    {
+                        var context = new ValidationContext(record); //for field validation
+
+                        var results = new List<ValidationResult>(); //To verify bad or good results
+
+                        bool isValid = Validator.TryValidateObject(record, context, results, true); //Shows validity on each row
+
+                        PreviewData.Add(new PreviewRow
+                            {
+                                Values = new List<string>
+                                {
+                                    record.Name?.Trim(),
+                                    record.Email?.Trim(),
+                                    record.Phone?.Trim(),
+                                    record.Address1?.Trim(),
+                                    record.Address2?.Trim(),
+                                    record.City?.Trim(),
+                                    record.StateCode?.Trim(),
+                                    record.ZipCode?.Trim(),
+                                    record.Country?.Trim() ?? "",
+                                },
+                                IsValid = isValid
+                            });
+                    }
+                    PreviewHeaders = typeof(CustomerImportModel).GetProperties().Select(p => p.Name).ToList();
+
+                    break;
+                case "Users":
+                    var userRecords = new List<UserImportModel>();
+
+                    await foreach (var record in csv.GetRecordsAsync<UserImportModel>())
+                    {
+                        var context = new ValidationContext(record); //for field validation
+
+                        var results = new List<ValidationResult>(); //To verify bad or good results
+
+                        bool isValid = Validator.TryValidateObject(record, context, results, true); //Shows validity on each row
+
+                        //For audit trails when uploading data
+
+                        PreviewData.Add(new PreviewRow
+                        {
+                            Values = new List<string>
+                                {
+                                    record.Name?.Trim(),
+                                    record.Email?.Trim(),
+                                    record.Phone?.Trim(),
+                                    record.UserName?.Trim(),
+                                    record.RoleID.ToString()?.Trim()
+                                },
+                            IsValid = isValid
+                        });
+                    }
+                    PreviewHeaders = typeof(UserImportModel).GetProperties().Select(p => p.Name).ToList();
+
+                    break;
+                case "Products":
+                    var productRecords = new List<ProductImportModel>();
+
+                    await foreach (var record in csv.GetRecordsAsync<ProductImportModel>())
+                    {
+                        var context = new ValidationContext(record); //for field validation
+
+                        var results = new List<ValidationResult>(); //To verify bad or good results
+
+                        bool isValid = Validator.TryValidateObject(record, context, results, true); //Shows validity on each row
+
+                        PreviewData.Add(new PreviewRow
+                        {
+                            Values = new List<string>
+                                {
+                                    record.Name?.Trim(),
+                                    record.Description?.Trim(),
+                                    record.Price.ToString()?.Trim(),
+                                    record.NumberInStock.ToString()?.Trim(),
+                                    record.NumberPerOrder.ToString()?.Trim(),
+                                    record.CategoryId.ToString()?.Trim(),
+                                },
+                            IsValid = isValid
+                        });
+                    }
+                    PreviewHeaders = typeof(ProductImportModel).GetProperties().Select(p => p.Name).ToList();
+
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            UploadErrors.Add("Error processing file: " + ex.Message);
+        }
+    }
+
+    private async Task SaveToDatabase()
+    {
+        var addedCount = 0;
+        switch (SelectedEntity)
+        {
+            case "Customers":
+                foreach (var row in PreviewData.Where(r => r.IsValid))
+                {
+                    try
+                    {
+                        var customer = new Customer
+                            {
+                                Name = row.Values[0],
+                                Email = row.Values[1],
+                                Phone = row.Values[2],
+                                Address = new Address
+                                {
+                                    Address1 = row.Values[3],
+                                    Address2 = row.Values[4],
+                                    City = row.Values[5],
+                                    StateCode = row.Values[6],
+                                    ZipCode = row.Values[7],
+                                    Country = row.Values[8]
+                                },
+                                UserAddedID = UserID,
+                                UserModifiedID = UserID,
+                                DateAdded = DateTime.UtcNow,
+                                DateModified = DateTime.UtcNow
+                            };
+
+                        DbContext.Customers.Add(customer);
+                        addedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        UploadErrors.Add($"Error adding row: {string.Join(", ", row.Values)} - {ex.Message}");
+                    }
+                }
+                break;
+
+            case "Users":
+                foreach (var row in PreviewData.Where(r => r.IsValid))
+                {
+                    try
+                    {
+                        var user = new User
+                            {
+                                Name = row.Values[0],
+                                Email = row.Values[1],
+                                Phone = row.Values[2],
+                                UserName = row.Values[3],
+                                RoleID = int.Parse(row.Values[4]),
+                                UserAddedID = UserID,
+                                UserModifiedID = UserID,
+                                DateAdded = DateTime.UtcNow,
+                                DateModified = DateTime.UtcNow,
+                                NewPassword = true,
+                                PasswordHash = BCrypt.Net.BCrypt.HashPassword($"Temp{row.Values[3]}123!")
+
+                            };
+
+                        DbContext.Users.Add(user);
+                        addedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        UploadErrors.Add($"Error adding row: {string.Join(", ", row.Values)} - {ex.Message}");
+                    }
+
+                }
+                break;
+
+            case "Products":
+                foreach (var row in PreviewData.Where(r => r.IsValid))
+                {
+                    try
+                    {
+                        var product = new Product
+                            {
+                                Name = row.Values[0],
+                                Description = row.Values[1],
+                                Price = decimal.Parse(row.Values[2]),
+                                NumberInStock = int.Parse(row.Values[3]),
+                                NumberPerOrder = int.Parse(row.Values[4]),
+                                CategoryId = int.Parse(row.Values[5]),
+                                UserAddedID = UserID,
+                                UserModifiedID = UserID,
+                                DateAdded = DateTime.UtcNow,
+                                DateModified = DateTime.UtcNow
+                            };
+                        DbContext.Products.Add(product);
+                        addedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        UploadErrors.Add($"Error adding row: {string.Join(", ", row.Values)} - {ex.Message}");
+                    }
+
+                }
+                break;
+        }
+
+        await DbContext.SaveChangesAsync();
+        SuccessMessage = $"{addedCount} records successfully imported.";
+    }
+
+    private void BackToDash()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+
+    public class PreviewRow
+    {
+        public List<string> Values { get; set; } = new();
+        public bool IsValid { get; set; }
+    }
+}

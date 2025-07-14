@@ -1,0 +1,138 @@
+﻿<h3>Login</h3>
+
+<!--Injections and Using-->
+@page "/login"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject NavigationManager Navigation
+@inject AppDbContext dbContext
+@inject IHttpContextAccessor httpContextAccessor
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@inject ILogger<Login> Logger
+
+<h1>Login page rendered</h1>
+<!--Main Div-->
+<div class="min-h-screen flex align-items-center justify-content-center bg-gray-100">
+
+    <!--Login Form-->
+    <EditForm Model="@loginModel" OnSubmit="HandleLogin" FormName="LoginForm">
+
+        <!--Data annotations validations-->
+        <!--<DataAnnotationsValidator />-->
+        <!--<ValidationSummary />-->
+
+        <!--Title-->
+        <h2 class="text-xl-center font-semibold text-center text-gray-700">Login</h2>
+
+        <!--Username-->
+        <div class="flex flex-col">
+            <label for="username" class="mb-1 text-sm-center font-medium text-gray-700">Username</label>
+            <InputText @bind-Value="loginModel.Username" class="p-2 border rounded focus:outline-none focus:ring w-full" />
+        </div>
+
+        <!--Password-->
+        <div class="flex flex-col">
+            <label for="password" class="mb-1 text-sm font-medium text-gray-700">Password</label>
+            <InputText @bind-Value="loginModel.Password" type="password" class="p-2 border rounded focus:outline-none focus-ring w-full" />
+        </div>
+
+        <!--Submit Button and Error Message-->
+        <div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">Login</button>
+        </div>
+        @if (loginFailed)
+        {
+            <p class="text-red-600 text-sm-center text-center">@ErrorMessage</p>
+        }
+    </EditForm>
+</div>
+
+
+@code {
+
+    //Login Model
+    private LoginModel loginModel = new();
+
+    //Error Message
+    private string ErrorMessage;
+
+    //Track failed login attempts
+    private bool loginFailed = false;
+
+    //Handle login form submission
+    private async Task HandleLogin()
+    {
+        Logger.LogInformation("Username: " + loginModel.Username);
+        Logger.LogInformation("Password: " + loginModel.Password);
+        Console.WriteLine("Login button clicked");
+        Logger.LogInformation("Attempting to get user for " + loginModel.Username);
+        var user = await dbContext.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.UserName == loginModel.Username);
+
+        if (user == null)
+        {
+            Logger.LogWarning("User not found: " + loginModel.Username);
+            ErrorMessage = "Invalid username or password.";
+            return;
+        }
+
+        var passwordHasher = new PasswordHasher<User>();
+        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginModel.Password);
+
+        Logger.LogInformation("Password verification result: " + result);
+        if (result == PasswordVerificationResult.Failed)
+        {
+            ErrorMessage = "Invalid username or password.";
+            loginFailed = true;
+            return;
+        }
+
+        if (result == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            Logger.LogInformation("Password needs rehashing for user: " + loginModel.Username);
+            user.PasswordHash = passwordHasher.HashPassword(user, loginModel.Password);
+            await dbContext.SaveChangesAsync();
+        }
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User")
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await httpContextAccessor.HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
+                });
+        Logger.LogInformation("User logged in: " + loginModel.Username);
+        Logger.LogInformation("User Role is " + user.Role?.RoleName ?? "User");
+        Logger.LogInformation("Redirecting to dashboard...");
+        loginFailed = false;
+        Navigation.NavigateTo("/dashboard");
+    }
+    private void HandleInvalidLogin()
+    {
+        Logger.LogWarning("Invalid form validation failed.");
+    }
+
+    public class LoginModel
+    {
+        [Required]
+        public string Username { get; set; }
+        [Required]
+        public string Password { get; set; }
+    }
+
+}

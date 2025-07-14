@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Barham_C971.DataClasses"
+             xmlns:converters="clr-namespace:Barham_C971.Converters"
+             xmlns:controls="clr-namespace:Barham_C971.Controls"
+             x:Class="Barham_C971.Pages.AssessmentPage"
+             Title="AssessmentPage">
+    
+    <!--Main Layout-->
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" Style="{StaticResource MainLayout}">
+
+        <!--Fixed Header-->
+        <Grid Grid.Row="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!--Logo-->
+                <Image Source="{AppThemeBinding Light='wgulogo.png', Dark='wgulogodark.png'}"
+                       HeightRequest="50"
+                       VerticalOptions="Start"
+                       HorizontalOptions="Start"
+                       x:Name="Logo"
+                       Margin="10"
+                       Grid.Column="0"/>
+
+                <!--Notification-->
+                <Image Source="{AppThemeBinding Light='notificationicon.png', Dark='notificationiconlight.png'}"
+                       HeightRequest="25"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"
+                       Grid.Column="1">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleNotificationsCommand}"/>
+                    </Image.GestureRecognizers>
+                </Image>
+
+
+                <!--Navigation-->
+                <Button Text="Home"
+                        Style="{StaticResource BackButton}"
+                        Grid.Column="2" 
+                        Command="{Binding HomeCommand}"/>
+                <Button Text="Back"
+                        Style="{StaticResource BackButton}"
+                        Command="{Binding BackCommand}"
+                        Grid.Column="3"/>
+            </Grid>
+        </Grid>
+
+        <!--Main Content-->
+        <VerticalStackLayout Grid.Row="1">
+
+            <!--Assessment Name and Type-->
+            <Border Style="{StaticResource Title}">
+                <VerticalStackLayout Margin="0" Padding="0" Spacing="0">
+                    
+                    <!--Assessment Name-->
+                    <Label Text="{Binding Assessment.AssessmentName}" 
+                           Style="{StaticResource TitleText}"
+                           IsVisible="{Binding IsEditingAssessment, Converter={StaticResource InverseBooleanConverter}}"
+                               Padding="0,5,0,0"/>
+                    <Entry Text="{Binding Assessment.AssessmentName, Mode=TwoWay}"
+                           Style="{StaticResource TitleEntry}"
+                           IsVisible="{Binding IsEditingAssessment}"/>
+                    
+                    <!--Assessment Type-->
+                    <Label Text="{Binding Assessment.AssessmentType}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Start"
+                           Margin="5"
+                           IsVisible="{Binding IsEditingAssessment, Converter={StaticResource InverseBooleanConverter}}"
+                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource MidnightBlue}}"/>
+                    <Picker Title="Type"
+                            HorizontalOptions="Center"
+                            ItemsSource="{Binding TypeOptions}"
+                            SelectedItem="{Binding Assessment.AssessmentType, Mode=TwoWay}"
+                            IsVisible="{Binding IsEditingAssessment}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!--Assessment Information-->
+            <Border Style="{StaticResource InformationBorder}">
+                <VerticalStackLayout>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!--Start Date-->
+                        <DatePicker Date="{Binding Assessment.AssessmentStartDate, Mode=TwoWay}" Grid.Column="0" HorizontalOptions="Center">
+                            <DatePicker.Triggers>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingAssessment}" Value="True">
+                                    <Setter Property="Style" Value="{StaticResource DateEnabled}"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingAssessment}" Value="False">
+                                    <Setter Property="Style" Value="{StaticResource DateDisabled}"/>
+                                </DataTrigger>
+                            </DatePicker.Triggers>
+                        </DatePicker>
+
+                        <!--Assessment Status-->
+                        <Label Text="{Binding Assessment.AssessmentStatus}" Grid.Column="1"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               IsVisible="{Binding IsEditingAssessment, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <Picker Grid.Column="1"
+                                Title="Status"
+                                ItemsSource="{Binding StatusOptions}"
+                                SelectedItem="{Binding Assessment.AssessmentStatus, Mode=TwoWay}"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                IsVisible="{Binding IsEditingAssessment}"/>
+
+                        <!--End Date-->
+                        <DatePicker Date="{Binding Assessment.AssessmentEndDate, Mode=TwoWay}" Grid.Column="2" HorizontalOptions="Center">
+                            <DatePicker.Triggers>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingAssessment}" Value="True">
+                                    <Setter Property="Style" Value="{StaticResource DateEnabled}"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingAssessment}" Value="False">
+                                    <Setter Property="Style" Value="{StaticResource DateDisabled}"/>
+                                </DataTrigger>
+                            </DatePicker.Triggers>
+                        </DatePicker>
+                    </Grid>
+
+                    <!--Instructor Details-->
+                    <Border Style="{StaticResource InstructorContainer}">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="3*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!--Instructor Name-->
+                            <Label Text="{Binding Instructor.InstructorName, StringFormat='Instructor: {0}'}" 
+                                   Grid.Row="1" Grid.Column="0"
+                                   Style="{StaticResource InstructorNameLabel}"
+                                   FontSize="12"/>
+
+
+                            <!--Instructor Email-->
+                            <Label Text="{Binding Instructor.InstructorEmail, StringFormat='Email: {0}'}"
+                                   Grid.Row="0" Grid.Column="2"
+                                   Style="{StaticResource InstructorContactLabel}"
+                                   FontSize="12">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OnEmailLabelTappedCommand}"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+
+                            <!--Instructor Phone-->
+                            <Label Text="{Binding Instructor.InstructorPhone, StringFormat='Phone: {0}'}"
+                                   Grid.Row="2" Grid.Column="2"
+                                   Style="{StaticResource InstructorContactLabel}"
+                                   FontSize="12"/>
+                        </Grid>
+                    </Border>
+
+                    <!--Assessment Details-->
+                    <VerticalStackLayout
+                            HeightRequest="275">
+                        <Border Style="{StaticResource InformationBorder}">
+                            <Label Text="Assessment Details"
+                                   Style="{StaticResource DetailsHeader}"
+                                   HorizontalOptions="Center"
+                                   TextDecorations="Underline"/>
+                        </Border>
+                        <Border Style="{StaticResource DetailsBlock}" HeightRequest="300">
+                            <VerticalStackLayout VerticalOptions="Fill">
+                                <Label Text="{Binding Assessment.AssessmentNotes}"
+                                       IsVisible="{Binding IsEditingAssessment, Converter={StaticResource InverseBooleanConverter}}"
+                                       Style="{StaticResource DetailsLabel}"/>
+                                <Editor Text="{Binding Assessment.AssessmentNotes, Mode=TwoWay}"
+                                        IsVisible="{Binding IsEditingAssessment}"
+                                        Style="{StaticResource DetailsEditor}"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+
+        <!--Buttons-->
+        <Grid Grid.Row="2" RowDefinitions="*, *">
+            <!--Edit Assessment Button-->
+                <Button Text="Edit Assessment"
+                        Command="{Binding EditAssessmentCommand}"
+                        IsVisible="{Binding IsEditingAssessment, Converter={StaticResource InverseBooleanConverter}}"
+                        Style="{StaticResource BackButton}"
+                        HorizontalOptions="Fill"
+                        Grid.Row="0"/>
+
+                <!--Save Button-->
+                <Button Text="Save" IsVisible="{Binding IsEditingAssessment}"
+                                Command="{Binding SaveAssessmentCommand}"
+                                Style="{StaticResource BlockButton}"
+                        Grid.Row="0"/>
+
+                <!--Cancel Button-->
+                <Button Text="Cancel" IsVisible="{Binding IsEditingAssessment}"
+                                Command="{Binding CancelAssessmentCommand}"
+                                Style="{StaticResource BlockButton}"
+                        Grid.Row="1"/>
+
+                <!--Delete Button-->
+                <Button Text="Delete Assessment" IsVisible="{Binding IsEditingAssessment, Converter={StaticResource InverseBooleanConverter}}"
+                                Command="{Binding DeleteAssessmentCommand}"
+                                Style="{StaticResource BlockButton}"
+                        Grid.Row="1"/>
+
+        </Grid>
+
+        <!--Assessments List-->
+        <CollectionView Grid.Row="4" ItemsSource="{Binding Assessments}" ItemsLayout="VerticalList">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Assessment">
+                    <controls:AssessmentBlock
+                        AssessmentName="{Binding AssessmentName}"
+                        AssessmentStatus="{Binding AssessmentStatus}"
+                        AssessmentStartDate="{Binding AssessmentStartDate}"
+                        AssessmentEndDate="{Binding AssessmentEndDate}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

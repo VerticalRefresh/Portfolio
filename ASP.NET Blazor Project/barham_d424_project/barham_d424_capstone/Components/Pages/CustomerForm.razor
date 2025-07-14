@@ -1,0 +1,181 @@
+﻿@page "/customerform/{CustomerId:int}"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using barham_d424_capstone.Data
+@using barham_d424_capstone.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authentication
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject ILogger<CustomerForm> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+
+<!--for history.back-->
+@inject IJSRuntime JS  
+
+<!--all users can add customers-->
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+
+<!--Alter title based on new or edit-->
+<h3 class="title-block px-3">@(CustomerId > 0 ? "Edit Customer" : "Add New Customer")</h3>
+
+@if (Customer == null || Customer.Address == null) //while loading
+{
+    <p><em>Loading customer...</em></p>
+}
+else //Our actual edit form
+{
+    <EditForm Model="Customer" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" FormName="CustomerForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="container-fluid px-3">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control custom-input" @bind-Value="Customer.Name" />
+                <ValidationMessage For="@(() => Customer.Name)" />
+            </div>
+
+
+        <div class="row">
+            <div class="mb-3 col-md-6">
+                <label class="form-label">Email</label>
+                <InputText class="form-control custom-input" @bind-Value="Customer.Email" />
+                <ValidationMessage For="@(() => Customer.Email)" />
+            </div>
+            
+            <div class="mb-3 col-md-6">
+                <label class="form-label">Phone</label>
+                <InputText class="form-control custom-input" @bind-Value="Customer.Phone" />
+                <ValidationMessage For="@(() => Customer.Phone)" />
+            </div>
+        </div>
+
+            <div class="mb-3">
+                <label class="form-label">Address 1</label>
+                <InputText class="form-control custom-input" @bind-Value="Customer.Address.Address1" />
+                <ValidationMessage For="@(() => Customer.Address.Address1)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Address 2</label>
+                <InputText class="form-control custom-input" @bind-Value="Customer.Address.Address2" />
+                <ValidationMessage For="@(() => Customer.Address.Address2)" />
+            </div>
+
+            <div class="row">
+                <div class="mb-3 col-md-4">
+                    <label class="form-label">City</label>
+                    <InputText class="form-control custom-input" @bind-Value="Customer.Address.City" />
+                    <ValidationMessage For="@(() => Customer.Address.City)" />
+                </div>
+
+                <div class="mb-3 col-md-4">
+                    <label class="form-label">State</label>
+                    <InputText class="form-control custom-input" @bind-Value="Customer.Address.StateCode" />
+                    <ValidationMessage For="@(() => Customer.Address.StateCode)" />
+                </div>
+
+                <div class="mb-3 col-md-4">
+                    <label class="form-label">Zip Code</label>
+                    <InputText class="form-control custom-input" @bind-Value="Customer.Address.ZipCode" />
+                    <ValidationMessage For="@(() => Customer.Address.ZipCode)" />
+                </div>
+            </div>
+
+            <div class="mb-3 col-md-6">
+                <label class="form-label">Country</label>
+                <InputText class="form-control" @bind-Value="Customer.Address.Country" />
+                <ValidationMessage For="@(() => Customer.Address.Country)" />
+            </div>
+        </div>
+    </EditForm>
+
+    <div class="m-3">
+        <button class="btn btn-primary" @onclick="HandleValidSubmit">Save</button>
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </div>
+
+}
+
+@code {
+
+    [Parameter] public int CustomerId { get; set; } = 0; //0 for new, > 0 for edit
+    
+    private Customer Customer { get; set; } = new Customer(); // Set in OnInitializedAsync
+
+    protected override async Task OnInitializedAsync()
+
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync(); //get our user for audit fields
+        var user = authState.User;
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (CustomerId > 0) // Get an existing customer from the Db
+        {
+            Customer = await DbContext.Customers
+            .Include(c => c.Address)
+            .FirstOrDefaultAsync(c => c.CustomerId == CustomerId);
+        }
+        else //Make a new one to prepare for the Db
+        {
+            Customer = new Customer
+            {
+                CustomerId = 0,
+                Address = new Address()
+            };
+        }
+
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))  //Checks if it's a new user for UserAddedID
+        {
+            if (CustomerId <= 0)  //Can't touch an existing Customer.UserAddedID
+            {
+                Customer.UserAddedID = userId;
+            }
+
+            Customer.UserModifiedID = userId;
+        }
+
+        if (CustomerId <= 0)  //Same with Date Added
+        {
+            Customer.DateAdded = DateTime.UtcNow;
+        }
+        Customer.DateModified = DateTime.UtcNow;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            if (CustomerId > 0) //Update existing
+            {
+                DbContext.Customers.Update(Customer);
+            }
+            else //Add new
+            {
+                DbContext.Customers.Add(Customer);
+            }
+
+            await DbContext.SaveChangesAsync();
+            await JS.InvokeVoidAsync("history.back");  //Return to either OrderForm or Customers
+        }
+        catch (DbUpdateException ex)
+        {
+            Logger.LogError(ex, "Error saving customer data.");
+        }
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        Logger.LogWarning("Invalid form submission.");
+    }
+
+    private async void Cancel() //Return to either OrderForm or Customers
+    {
+        await JS.InvokeVoidAsync("history.back");
+    }  
+}

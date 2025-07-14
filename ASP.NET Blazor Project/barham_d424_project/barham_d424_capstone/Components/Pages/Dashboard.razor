@@ -1,0 +1,83 @@
+﻿@page "/dashboard"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject NavigationManager Navigation
+@inject ILogger<Dashboard> Logger
+
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+
+<h3>Dashboard</h3>
+
+<AuthorizeView>
+    <Authorized Context="auth">
+        @{
+            var role = auth.User.FindFirst(ClaimTypes.Role)?.Value; //Getting role for role-based permissions
+        }
+        @if (role is "Owner" or "Admin" or "Production")
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    Admin functions
+                </div>
+
+                <div class="card-body d-flex flex-wrap gap-3 justify-content-center">
+                    <div class="flex-fill" style="max-width: 250px">
+                        <button class="btn-secondary btn-dashboard" @onclick="@(() => Navigate("/products"))">Product Management</button>
+                    </div>
+
+                    <div class="flex-fill" style="max-width: 250px">
+                        <button class="btn-secondary btn-dashboard" @onclick="@(() => Navigate("/users"))">User Management</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Support functions
+    </div>
+    <div class="card-body d-flex flex-wrap justify-content-center gap-3">
+        
+        <div class="flex-fill" style="max-width: 250px">
+            <button class="btn-primary btn-dashboard" @onclick="@(() => Navigate("/customers"))">Customer Management</button>
+        </div>
+
+        <div class="flex-fill" style="max-width: 250px">
+            <button class="btn-primary btn-dashboard" @onclick="@(() => Navigate("/reports"))">Reports</button>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4">
+    <button class="btn-success btn-lg w-100 py-3" @onclick="@(() => Navigate("/orders"))">Go To Order Management</button>
+</div>
+<div class="card mb-4">
+    <div class="card-header">
+        Snapshot
+    </div>
+    <div class="card-body">
+<OrderSummary
+    Title="Current Month's Orders"
+    FilterFrom="@startOfMonth" 
+    IsSelectable=false/>
+    </div>
+</div>
+<div class="mt-4">
+    <button class="btn-primary" @onclick="@(() => Navigate("/migration"))">Database Migration</button>
+</div>
+
+@code{
+    DateTime startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+    
+    private void Navigate(string path)
+    {
+           Navigation.NavigateTo(path, forceLoad: true);
+    }
+}

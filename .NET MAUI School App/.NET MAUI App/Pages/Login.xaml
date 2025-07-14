@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Barham_C971.Pages.Login"
+             xmlns:local="clr-namespace:Barham_C971.DataClasses"
+             xmlns:vm="clr-namespace:Barham_C971.ViewModels">
+    <ContentPage.BindingContext>
+        <vm:LoginViewModel/>
+    </ContentPage.BindingContext>
+    
+    <VerticalStackLayout
+        x:Name="MainLayout"
+        Style="{StaticResource MainLayout}">
+        <!--Logo-->
+        <Image Source="{AppThemeBinding Light='wgulogo.png', Dark='wgulogodark.png'}" HeightRequest="50" VerticalOptions="Start" HorizontalOptions="Center"
+               Margin="50"/>
+        
+        <Label Text="Welcome to the WGU student application" TextColor="{AppThemeBinding Light={StaticResource PrimaryText},
+            Dark={StaticResource PrimaryDarkText}}"
+               Padding="15"
+               HorizontalOptions="Center"
+               FontSize="16"
+               FontFamily="Arial.ttf"
+               FontAttributes="Bold"/>
+        
+        <!--UserName-->
+        <Label Text="User Name (Use 'Test')"
+               Padding="15"
+               HorizontalOptions="Center"
+               FontSize="14"
+               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}}"/>
+        <Border
+            Stroke="{StaticResource PrimaryDark}"
+            HorizontalOptions="Center"
+            >
+            <Entry
+                Text="{Binding Username, Mode=TwoWay}"
+                TextColor="{AppThemeBinding Light={StaticResource PrimaryText}}"
+                Margin="0"
+                HorizontalOptions="Center"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Secondary}}"
+                />
+        </Border>
+        
+        <!--Password-->
+        <Label Text="Password (Use 'Test')"
+               HorizontalOptions="Center"
+               Padding="15"
+               FontSize="14"
+               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}}"/>
+        <Border
+            Stroke="{StaticResource PrimaryDark}"
+            HorizontalOptions="Center">
+            <Entry
+                Text="{Binding Password, Mode=TwoWay}"
+                TextColor="{AppThemeBinding Light={StaticResource PrimaryText}}"
+                Margin="0"
+                HorizontalOptions="Center"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Secondary}}"
+                IsPassword="True"/>
+            
+        </Border>
+        
+        <!--Login Button-->
+        <Button
+            Text="Log In"
+            Style="{StaticResource BackButton}"
+            HorizontalOptions="Center"
+            Command="{Binding LoginCommand}"/>
+    </VerticalStackLayout>
+</ContentPage>

@@ -1,0 +1,20 @@
+﻿@inject NavigationManager Navigation
+@inject ILogger<RedirectToLogin> Logger
+@code {
+    protected override void OnInitialized()
+    {
+        var currentUri = Navigation.ToBaseRelativePath(Navigation.Uri).TrimEnd('/');
+        Logger.LogInformation($"RedirectToLogin called.  Current URI: {currentUri}");
+
+        if (!string.Equals(currentUri, "login", StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.LogInformation("Redirecting to login page from RedirectToLogin...");
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            Logger.LogInformation("Already on /login, not redirecting");
+        }
+
+    }
+}

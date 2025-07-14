@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Barham_C971.DataClasses"
+             xmlns:controls="clr-namespace:Barham_C971.Controls"
+             x:Class="Barham_C971.Pages.CoursePage"
+             Title="CoursePage">
+    
+    <!--Main Layout-->
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" Style="{StaticResource MainLayout}">
+        
+        <!--Fixed Header-->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Logo-->
+            <Image Source="{AppThemeBinding Light='wgulogo.png', Dark='wgulogodark.png'}"
+                   HeightRequest="50"
+                   VerticalOptions="Start"
+                   HorizontalOptions="Start"
+                   x:Name="Logo"
+                   Margin="10"
+                   Grid.Column="0"/>
+
+            <!--Notification-->
+            <Image Source="{AppThemeBinding Light='notificationicon.png', Dark='notificationiconlight.png'}"
+                   HeightRequest="25"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   Grid.Column="1">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleNotificationsCommand}"/>
+                </Image.GestureRecognizers>
+            </Image>
+
+
+            <!--Navigation-->
+            <Button Text="Home"
+                    Style="{StaticResource BackButton}"
+                    Grid.Column="2" 
+                    Command="{Binding HomeCommand}"/>
+            <Button Text="Back"
+                    Style="{StaticResource BackButton}"
+                    Command="{Binding BackCommand}"
+                    Grid.Column="3"/>
+        </Grid>
+        
+        <!--Main Content-->
+        <VerticalStackLayout Grid.Row="1">
+        
+            <!--Course Name-->
+            <Border Style="{StaticResource Title}">
+                <VerticalStackLayout>
+                    <Label Text="{Binding Course.CourseName}" 
+                           Style="{StaticResource TitleText}"
+                           IsVisible="{Binding IsEditingCourse, Converter={StaticResource InverseBooleanConverter}}"/>
+                    <Entry Text="{Binding Course.CourseName, Mode=TwoWay}"
+                           Style="{StaticResource TitleEntry}"
+                           IsVisible="{Binding IsEditingCourse}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!--Course Details-->
+            <Border Style="{StaticResource InformationBorder}">
+                <StackLayout Orientation="Vertical">
+                    
+                    <!--Course dates and status-->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!--Course Start Date-->
+                        <DatePicker Date="{Binding Course.CourseStartDate, Mode=TwoWay}" Grid.Column="0">
+                            <DatePicker.Triggers>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingCourse}" Value="True">
+                                    <Setter Property="Style" Value="{StaticResource DateEnabled}"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingCourse}" Value="False">
+                                    <Setter Property="Style" Value="{StaticResource DateDisabled}"/>
+                                </DataTrigger>
+                            </DatePicker.Triggers>
+                        </DatePicker>
+
+                        <!--Course Status-->
+                        <Label Text="{Binding Course.CourseStatus}" Grid.Column="1"
+                               Style="{StaticResource StatusLabel}"
+                               IsVisible="{Binding IsEditingCourse, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <Entry Text="{Binding Course.CourseStatus, Mode=TwoWay}" Grid.Column="1"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               IsVisible="{Binding IsEditingCourse}"/>
+
+                        <!--Course End Date-->
+                        <DatePicker Date="{Binding Course.CourseEndDate, Mode=TwoWay}" Grid.Column="2">
+                            <DatePicker.Triggers>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingCourse}" Value="True">
+                                    <Setter Property="Style" Value="{StaticResource DateEnabled}"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="DatePicker" Binding="{Binding IsEditingCourse}" Value="False">
+                                    <Setter Property="Style" Value="{StaticResource DateDisabled}"/>
+                                </DataTrigger>
+                            </DatePicker.Triggers>
+                        </DatePicker>
+                    </Grid>
+
+                    <!--Instructor Details-->
+                    <Border Style="{StaticResource InstructorContainer}">
+                        <Grid Margin="5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="3*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!--Instructor Name-->
+                            <Label Text="{Binding SelectedInstructor.InstructorName, StringFormat='Instructor: {0}'}" 
+                                   Grid.Row="1" Grid.Column="0"
+                                   Style="{StaticResource InstructorNameLabel}"
+                                   IsVisible="{Binding IsEditingInstructor, Converter={StaticResource InverseBooleanConverter}}"
+                                   FontSize="12"/>
+
+                            <Entry Text="{Binding SelectedInstructor.InstructorName, Mode=TwoWay}" 
+                                   Grid.Row="0" Grid.Column="0"
+                                   Style="{StaticResource InstructorNameEntry}"
+                                   IsVisible="{Binding IsEditingInstructor}"/>
+
+                            <!--Instructor Email-->
+                            <Label Text="{Binding SelectedInstructor.InstructorEmail, StringFormat='Email: {0}'}"
+                                   Grid.Row="0" Grid.Column="2"
+                                   Style="{StaticResource InstructorContactLabel}"
+                                   IsVisible="{Binding IsEditingInstructor, Converter={StaticResource InverseBooleanConverter}}"
+                                   FontSize="12">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OnEmailLabelTappedCommand}"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+
+                            <Entry Text="{Binding SelectedInstructor.InstructorEmail, Mode=TwoWay}"
+                                   Grid.Row="0" Grid.Column="2"
+                                   Style="{StaticResource InstructorContactEntry}"
+                                   IsVisible="{Binding IsEditingInstructor}"/>
+
+                            <!--Edit Button-->
+                            <Image Source="editicondark.png"
+                                   HeightRequest="20"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   IsVisible="{Binding IsEditingInstructor, Converter={StaticResource InverseBooleanConverter}}"
+                                   Grid.Row="1"
+                                   Grid.Column="1">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding EditInstructorCommand}"/>
+                                </Image.GestureRecognizers>
+                            </Image>
+
+                            <!--Select Instructor Button for editing-->
+                            <Button Text="Select Instructor"
+                                    Grid.Column="0"
+                                    Grid.Row="2"
+                                    Command="{Binding SelectInstructorCommand}"
+                                    VerticalOptions="Center"
+                                    Style="{StaticResource BlockButton}"
+                                    IsVisible="{Binding IsEditingInstructor}"
+                                    Margin="2"
+                                    FontAttributes="None"
+                                    FontSize="12"/>
+
+                            <!--Instructor Phone-->
+                            <Label Text="{Binding SelectedInstructor.InstructorPhone, StringFormat='Phone: {0}'}"
+                                   Grid.Row="2" Grid.Column="2"
+                                   Style="{StaticResource InstructorContactLabel}"
+                                   IsVisible="{Binding IsEditingInstructor, Converter={StaticResource InverseBooleanConverter}}"
+                                   FontSize="12">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OnPhoneLabelTappedCommand}"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+
+                            <Entry Text="{Binding SelectedInstructor.InstructorPhone, Mode=TwoWay}"
+                                   Grid.Row="2" Grid.Column="2"
+                                   Style="{StaticResource InstructorContactEntry}"
+                                   IsVisible="{Binding IsEditingInstructor}"/>
+                        </Grid>
+                    </Border>
+
+                    <!--Course Details and Notes-->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="300"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!--Course Details-->
+                        <VerticalStackLayout Grid.Column="0" Margin="1">
+                            <Border Style="{StaticResource InformationBorder}">
+                                <Label Text="Course Details"
+                                       Style="{StaticResource DetailsHeader}"/>
+                            </Border>
+                            <ScrollView Orientation="Vertical">
+                                <Border Style="{StaticResource DetailsBlock}" HeightRequest="300">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Course.CourseDetails}"
+                                               Style="{StaticResource DetailsLabel}"
+                                               IsVisible="{Binding IsEditingCourse, Converter={StaticResource InverseBooleanConverter}}"/>
+                                        <Editor Text="{Binding Course.CourseDetails, Mode=TwoWay}"
+                                                Style="{StaticResource DetailsEditor}"
+                                                IsVisible="{Binding IsEditingCourse}"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </ScrollView>
+                        </VerticalStackLayout>
+
+                        <!--Course Notes-->
+                        <VerticalStackLayout Grid.Column="1" Margin="1">
+                            <Border Style="{StaticResource InformationBorder}">
+                                <Label Text="Course Notes"
+                                       Style="{StaticResource DetailsHeader}"/>
+                            </Border>
+                            <ScrollView Orientation="Vertical">
+                                <Border Style="{StaticResource DetailsBlock}" HeightRequest="300">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Course.CourseNotes}"
+                                               Style="{StaticResource DetailsLabel}"
+                                               IsVisible="{Binding IsEditingCourse, Converter={StaticResource InverseBooleanConverter}}"/>
+                                        <Editor Text="{Binding Course.CourseNotes, Mode=TwoWay}"
+                                                Style="{StaticResource DetailsEditor}"
+                                                IsVisible="{Binding IsEditingCourse}"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </ScrollView>
+                        </VerticalStackLayout>
+                    </Grid>
+                </StackLayout>
+            </Border>
+        </VerticalStackLayout>
+
+
+        <!--Buttons-->
+        <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, 2*, *" Grid.Row="2" ColumnSpacing="10">
+            <Button Text="Save"
+                    IsVisible="{Binding IsEditingCombined}"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource BackButton}"
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    HorizontalOptions="Fill"/>
+            <Button Text="Add Assessment"
+                    IsVisible="{Binding IsEditingCourse}"
+                    Command="{Binding AddAssessmentCommand}"
+                    Style="{StaticResource BackButton}"
+                    Grid.Column="1"
+                    Grid.Row="0"
+                    HorizontalOptions="Fill"/>
+            <Button Text="Cancel"
+                    IsVisible="{Binding IsEditingCombined}"
+                    Command="{Binding CancelEditCommand}"
+                    Style="{StaticResource BackButton}"
+                    Grid.Column="2"
+                    Grid.Row="0"
+                    HorizontalOptions="Fill"/>
+            <Button Text="Edit Course" Command="{Binding EditCourseCommand}" Style="{StaticResource BackButton}"
+                    IsVisible="{Binding IsEditingCourse, Converter={StaticResource InverseBooleanConverter}}"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    HorizontalOptions="Fill"/>
+            <Button Text="Share Notes" Command="{Binding ShareNotesCommand}" Style="{StaticResource BackButton}"
+                    IsVisible="{Binding IsEditingCombined, Converter={StaticResource InverseBooleanConverter}}"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    HorizontalOptions="Fill"/>
+        </Grid>
+
+        <!--Assessments-->
+        <CollectionView ItemsSource="{Binding Assessments}" ItemsLayout="VerticalList" Grid.Row="4">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Assessment">
+                    <controls:AssessmentBlock AssessmentName="{Binding AssessmentName}"
+                                              AssessmentStatus="{Binding AssessmentStatus}"
+                                              AssessmentStartDate="{Binding AssessmentStartDate}"
+                                              AssessmentEndDate="{Binding AssessmentEndDate}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
